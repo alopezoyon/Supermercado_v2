@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Supermercadov2</string>
-    <string name="btnLogin">Iniciar Sesión</string>
+    <string name="app_name">Supermercado</string>
+    <string name="btnLogin">Iniciar sesión</string>
     <string name="btnRegister">Registrarse</string>
     <string name="login_success">Inicio de sesión exitoso</string>
     <string name="intentos_agotados">Número de intentos agotado</string>
@@ -9,7 +10,7 @@
     <string name="hint_username">Usuario</string>
     <string name="hint_password">Contraseña</string>
     <string name="registration_success">Registro exitoso</string>
-    <string name="fill_all_fields">Completa todos los campos</string>
+    <string name="fill_all_fields">ompleta todos los campos</string>
     <string name="edtName">Nombre</string>
     <string name="edtLastName">Apellido</string>
     <string name="edtEmail">Correo Electrónico</string>
@@ -26,22 +27,12 @@
     <string name="error_maps">Error al abrir Google Maps</string>
     <string name="change_language">Cambiar idioma</string>
     <string name="select_language">Elegir idioma</string>
-    <array name="language_options">
-        <item>Castellano</item>
-        <item>English</item>
-        <item>Français</item>
-    </array>
     <string name="agregar_notas">Agregar Nota</string>
     <string name="guardar_nota">Guardar nota</string>
     <string name="message_alert">Mensaje de alerta</string>
     <string name="noti_de">Notificación de</string>
     <string name="change_color">Cambiar el color</string>
     <string name="select_color">Selecciona un color</string>
-    <array name="colorOptions">
-        <item>Estilo 1</item>
-        <item>Estilo 2</item>
-        <item>Estilo 3</item>
-    </array>
     <string name="add_product">Añadir Producto</string>
     <string name="go">Ir</string>
     <string name="username_exist">El nombre de usuario ya está registrado</string>

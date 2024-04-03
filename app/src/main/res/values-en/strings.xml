@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Supermarket</string>
+    <string name="btnLogin">Log In</string>
+    <string name="btnRegister">Sign Up</string>
+    <string name="login_success">Successful login</string>
+    <string name="intentos_agotados">Attempts limit exceeded</string>
+    <string name="dialog_title_failure">Failed Attempt</string>
+    <string name="dialog_message_invalid_credentials">Invalid credentials. Remaining attempts:</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="registration_success">Registration successful</string>
+    <string name="fill_all_fields">Complete all fields</string>
+    <string name="edtName">Name</string>
+    <string name="edtLastName">Surname</string>
+    <string name="edtEmail">Email</string>
+    <string name="welcome_message">"Welcome, "</string>
+    <string name="btnAgregarSupermercado">Add supermarket</string>
+    <string name="edtNombreProducto">Product name</string>
+    <string name="edtPrecioProducto">Product price</string>
+    <string name="btnAgregar">Add</string>
+    <string name="btnCancelar">Cancel</string>
+    <string name="completar_campos">Please fill in all fields</string>
+    <string name="edtNombreSupermercado">Supermarket name</string>
+    <string name="edtLocalizacionSupermercado">Location</string>
+    <string name="producto_de">"Products from "</string>
+    <string name="error_maps">Error opening Google Maps</string>
+    <string name="change_language">Change Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="agregar_notas">Add Note</string>
+    <string name="guardar_nota">Save Note</string>
+    <string name="message_alert">Alert message</string>
+    <string name="noti_de">Notification of</string>
+    <string name="change_color">Change colour</string>
+    <string name="select_color">Select a colour</string>
+    <string name="add_product">Add Product</string>
+    <string name="go">Go</string>
+    <string name="username_exist">Username already exists</string>
+    <string name="supermarket_exists">Supermarket already exists</string>
+    <string name="modify_precio">Modify price</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="product_exists">Product already exists</string>
+    <string name="no_notes">There is no notes in this supermarket</string>
+    <string name="see_notes">See Notes</string>
+</resources>

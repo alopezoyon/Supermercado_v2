@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--Menú que tiene dos items: un cuadrado verde que sirve para cambiar el color de fondo y el muñeco de android para cambiar el idioma-->
+    <item
+        android:id="@+id/menu_change_color"
+        android:title="@string/change_color"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_launcher_background"/>
+
+    <item
+        android:id="@+id/menu_change_language"
+        android:title="@string/change_language"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_launcher_foreground"/>
+</menu>

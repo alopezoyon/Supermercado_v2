@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--Menú que tiene el item de un lápiz que sirve para añadir una nota-->
+    <item
+        android:id="@+id/action_add_note"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:title="Agregar Nota"
+        app:showAsAction="ifRoom"/>
+</menu>

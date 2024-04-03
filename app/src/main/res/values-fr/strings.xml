@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Supermarché</string>
+    <string name="btnLogin">Se connecter</string>
+    <string name="btnRegister">S\'inscrire</string>
+    <string name="login_success">Connexion réussie</string>
+    <string name="intentos_agotados">Limite de tentatives dépassé</string>
+    <string name="dialog_title_failure">Échec de la tentative</string>
+    <string name="dialog_message_invalid_credentials">Identifiants invalides. Tentatives restantes :</string>
+    <string name="hint_username">Nom d\'utilisateur</string>
+    <string name="hint_password">Mot de passe</string>
+    <string name="registration_success">Inscription réussie</string>
+    <string name="fill_all_fields">Remplissez tous les champs</string>
+    <string name="edtName">Prènom</string>
+    <string name="edtLastName">Nom</string>
+    <string name="edtEmail">Courriel</string>
+    <string name="welcome_message">"Bienvenue, "</string>
+    <string name="btnAgregarSupermercado">Ajouter un supermarché</string>
+    <string name="edtNombreProducto">Nom du produit</string>
+    <string name="edtPrecioProducto">Prix du produit</string>
+    <string name="btnAgregar">Ajouter</string>
+    <string name="btnCancelar">Annuler</string>
+    <string name="completar_campos">Veuillez remplir tous les champs</string>
+    <string name="edtNombreSupermercado">Nom du supermarché</string>
+    <string name="edtLocalizacionSupermercado">Localisation</string>
+    <string name="producto_de">"Produits de "</string>
+    <string name="error_maps">Erreur lors de l\'ouverture de Google Maps</string>
+    <string name="change_language">Changer de langue</string>
+    <string name="select_language">Choisir la langue</string>
+    <string name="agregar_notas">Ajouter une note</string>
+    <string name="guardar_nota">Enregistrer la note</string>
+    <string name="message_alert">Message d\'alerte</string>
+    <string name="noti_de">Message de</string>
+    <string name="change_color">Changer le couleur</string>
+    <string name="select_color">Choisissez une couleur</string>
+    <string name="add_product">Ajouter un produit</string>
+    <string name="go">Aller</string>
+    <string name="username_exist">Le nom d\'utilisateur existe déjà</string>
+    <string name="supermarket_exists">Supermarché existe déjà</string>
+    <string name="modify_precio">Modifier prix</string>
+    <string name="save">Sauvegarder</string>
+    <string name="cancel">Annuler</string>
+    <string name="product_exists">Produit existe déjà</string>
+    <string name="no_notes">Il n\'y a pas de notes dans ce supermarché</string>
+    <string name="see_notes">Voir les notes</string>
+</resources>
