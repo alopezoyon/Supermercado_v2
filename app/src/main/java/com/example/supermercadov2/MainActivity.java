@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,14 +15,18 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.Data;
+
 
 //Esta clase implementa la pantalla de logIn.
 //Se pide el usuario y contraseña.
@@ -68,22 +73,50 @@ public class MainActivity extends AppCompatActivity {
                 String username = edtUsername.getText().toString();
                 String password = edtPassword.getText().toString();
 
-                if (databaseHelper.isValidCredentials(username, password)) {
-                    Toast.makeText(MainActivity.this, getString(R.string.login_success), Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(MainActivity.this, MenuPrincipal.class);
-                    intent.putExtra("USERNAME_EXTRA", username);
-                    startActivity(intent);
-                } else {
-                    loginAttempts--;
-
-                    if (loginAttempts > 0) {
-                        showAttemptsDialog(loginAttempts);
-                    } else {
-                        Toast.makeText(MainActivity.this, getString(R.string.intentos_agotados), Toast.LENGTH_SHORT).show();
-                        blockLoginAttemptsFor30Seconds();
-                    }
+                // Crear un objeto JSONObject con los datos de inicio de sesión
+                JSONObject postData = new JSONObject();
+                try {
+                    postData.put("username", username);
+                    postData.put("password", password);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
+                String serverAddress = "http://34.170.99.24:81/login.php";
+                // Crear una solicitud de trabajo OneTimeWorkRequest
+                OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                        .setInputData(new Data.Builder()
+                                .putString("direccion", serverAddress)
+                                .putString("datos", postData.toString())
+                                .build())
+                        .build();
+
+
+                // Observar el estado de la solicitud de trabajo
+                WorkManager.getInstance(MainActivity.this).getWorkInfoByIdLiveData(otwr.getId())
+                        .observe(MainActivity.this, workInfo -> {
+                            if (workInfo != null && workInfo.getState().isFinished()) {
+                                String resultado = workInfo.getOutputData().getString("datos");
+                                // Aquí puedes manejar la respuesta del servidor
+                                Log.d("Resultado", resultado);
+                                // Verificar si el login fue exitoso
+                                if (resultado.equals("Inicio de sesión exitoso. Bienvenido, " + username + "!")) {
+                                    Intent intent = new Intent(MainActivity.this, MenuPrincipal.class);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    loginAttempts--;
+                                    if (loginAttempts > 0) {
+                                        Toast.makeText(MainActivity.this, "Login fallido. Intentos restantes: " + loginAttempts, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        blockLoginAttemptsFor30Seconds();
+                                    }
+                                }
+                            }
+                        });
+
+                // Encolar la solicitud de trabajo
+                WorkManager.getInstance(MainActivity.this).enqueue(otwr);
             }
 
         });
