@@ -80,27 +80,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    //Método para validar credenciales a la hora de iniciar sesión
-    public boolean isValidCredentials(String username, String password) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(
-                TABLE_USERS,
-                new String[]{COLUMN_USERNAME, COLUMN_PASSWORD},
-                COLUMN_USERNAME + " = ? AND " + COLUMN_PASSWORD + " = ?",
-                new String[]{username, password},
-                null,
-                null,
-                null
-        );
-
-        boolean isValid = cursor.getCount() > 0;
-        cursor.close();
-        db.close();
-
-        return isValid;
-    }
-
-
     //Método para añadir un usuario
     public void addUser(String username, String password, String email, String name, String lastName) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -114,25 +93,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-
-    public boolean isUsernameExists(String username) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(
-                TABLE_USERS,
-                new String[]{COLUMN_USERNAME},
-                COLUMN_USERNAME + " = ?",
-                new String[]{username},
-                null,
-                null,
-                null
-        );
-
-        boolean exists = cursor.getCount() > 0;
-        cursor.close();
-        db.close();
-
-        return exists;
-    }
 
     //Método para obtener los supermercados guardados
     public List<Supermercado> getSupermercados() {

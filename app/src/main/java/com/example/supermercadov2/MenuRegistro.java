@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +12,12 @@ import android.widget.Toast;
 import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Locale;
 
@@ -53,18 +60,50 @@ public class MenuRegistro extends AppCompatActivity {
                 String password = edtPassword.getText().toString();
 
                 if (!name.isEmpty() && !lastName.isEmpty() && !email.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
-                    if (databaseHelper.isUsernameExists(username)){
-                        Toast.makeText(MenuRegistro.this, getString(R.string.username_exist), Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        databaseHelper.addUser(username, password, email, name, lastName);
-                        Toast.makeText(MenuRegistro.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+
+                    // Crear un objeto JSONObject con los datos de inicio de sesión
+                    JSONObject postData = new JSONObject();
+                    try {
+                        postData.put("name", name);
+                        postData.put("lastName", lastName);
+                        postData.put("email", email);
+                        postData.put("username", username);
+                        postData.put("password", password);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
 
-                    Intent intent = new Intent(MenuRegistro.this, MainActivity.class);
-                    startActivity(intent);
+                    String serverAddress = "http://34.170.99.24:81/registro.php";
+                    // Crear una solicitud de trabajo OneTimeWorkRequest
+                    OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                            .setInputData(new Data.Builder()
+                                    .putString("direccion", serverAddress)
+                                    .putString("datos", postData.toString())
+                                    .build())
+                            .build();
 
-                    finish();
+                    // Observar el estado de la solicitud de trabajo
+                    WorkManager.getInstance(MenuRegistro.this).getWorkInfoByIdLiveData(otwr.getId())
+                            .observe(MenuRegistro.this, workInfo -> {
+                                if (workInfo != null && workInfo.getState().isFinished()) {
+                                    String resultado = workInfo.getOutputData().getString("datos");
+                                    // Aquí puedes manejar la respuesta del servidor
+                                    Log.d("Resultado", resultado);
+                                    // Verificar si el usuario existe
+                                    if (!resultado.equals("El nombre de usuario " + username + " ya está en uso.")) {
+                                        databaseHelper.addUser(username, password, email, name, lastName);
+                                        Toast.makeText(MenuRegistro.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(MenuRegistro.this, MainActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(MenuRegistro.this, getString(R.string.username_exist), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+
+                    // Encolar la solicitud de trabajo
+                    WorkManager.getInstance(MenuRegistro.this).enqueue(otwr);
                 } else {
                     Toast.makeText(MenuRegistro.this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show();
                 }

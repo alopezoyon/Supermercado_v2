@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private EditText edtUsername, edtPassword;
     private Button btnLogin, btnRegister;
     private int loginAttempts = 3;
-    private DatabaseHelper databaseHelper;
     private boolean preferencesLoaded = false;
     private Timer loginTimer;
 
@@ -58,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
         edtPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
-
-        databaseHelper = new DatabaseHelper(this);
 
 
         edtUsername.setHint(getString(R.string.hint_username));
