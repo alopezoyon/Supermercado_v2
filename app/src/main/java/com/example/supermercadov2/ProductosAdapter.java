@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,7 +17,7 @@ import java.util.List;
 
 // Esta clase es un adaptador para un RecyclerView, que se utiliza para mostrar la lista de productos en la interfaz.
 //También se implementa un dialog para modificar el precio de un producto.
-public class ProductosAdapter extends RecyclerView.Adapter<ProductosAdapter.ProductoViewHolder> {
+public class ProductosAdapter extends RecyclerView.Adapter<ProductosAdapter.ProductoViewHolder> implements DatabaseHelper.GetNombreSupermercadoCallback, DatabaseHelper.ModificarPrecioCallback {
 
     private List<Producto> listaProductos;
     private Context context;
@@ -54,6 +55,16 @@ public class ProductosAdapter extends RecyclerView.Adapter<ProductosAdapter.Prod
         return listaProductos.size();
     }
 
+    @Override
+    public void onPrecioModificado(boolean modificacionExitosa) {
+
+    }
+
+    @Override
+    public void onNombreSupermercadoLoaded(String nombreSupermercado) {
+
+    }
+
     public static class ProductoViewHolder extends RecyclerView.ViewHolder {
         TextView txtNombre;
         TextView txtPrecio;
@@ -74,18 +85,39 @@ public class ProductosAdapter extends RecyclerView.Adapter<ProductosAdapter.Prod
         View view = inflater.inflate(R.layout.activity_dialog_modificar_precio, null);
         final EditText editTextPrecio = view.findViewById(R.id.editTextPrecio);
         editTextPrecio.setText(String.valueOf(producto.getPrecio()));
-        String nombreSupermercado = databaseHelper.obtenerNombreSupermercado(producto);
-
-        builder.setView(view);
-        builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+        databaseHelper.obtenerNombreSupermercado(producto.getNombre(), new DatabaseHelper.GetNombreSupermercadoCallback() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                double nuevoPrecio = Double.parseDouble(editTextPrecio.getText().toString());
-                producto.setPrecio(nuevoPrecio);
-                notifyDataSetChanged();
-                databaseHelper.modificarPrecioProducto(nombreSupermercado, producto.getNombre(), nuevoPrecio);
+            public void onNombreSupermercadoLoaded(String nombreSupermercado) {
+                // Una vez que se carga el nombre del supermercado, podemos usarlo en la llamada a modificarPrecioProducto
+                builder.setView(view);
+                builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        double nuevoPrecio = Double.parseDouble(editTextPrecio.getText().toString());
+                        producto.setPrecio(nuevoPrecio);
+                        notifyDataSetChanged();
+
+                        // Llamada para modificar el precio del producto con el nombre del supermercado obtenido
+                        databaseHelper.modificarPrecioProducto(nombreSupermercado, producto.getNombre(), nuevoPrecio, new DatabaseHelper.ModificarPrecioCallback() {
+                            @Override
+                            public void onPrecioModificado(boolean modificacionExitosa) {
+                                if (modificacionExitosa) {
+                                    // La modificación del precio fue exitosa
+                                    Toast.makeText(context, "¡Precio modificado correctamente!", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    // La modificación del precio falló
+                                    Toast.makeText(context, "Error al modificar el precio.", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
+                builder.setNegativeButton(R.string.cancel, null);
+
+                builder.show();
             }
         });
+
         builder.setNegativeButton(R.string.cancel, null);
 
         builder.show();

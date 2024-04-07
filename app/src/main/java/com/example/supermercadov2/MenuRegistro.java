@@ -1,5 +1,7 @@
 package com.example.supermercadov2;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -60,56 +62,29 @@ public class MenuRegistro extends AppCompatActivity {
                 String password = edtPassword.getText().toString();
 
                 if (!name.isEmpty() && !lastName.isEmpty() && !email.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
+                    DatabaseHelper databaseHelper = new DatabaseHelper(MenuRegistro.this);
+                    // Llamada a registrar pasando un objeto RegistroCallback
+                    databaseHelper.registrar(name, lastName, email, username, password, new DatabaseHelper.RegistroCallback() {
+                        @Override
+                        public void onRegistroSuccess() {
+                            Toast.makeText(MenuRegistro.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(MenuRegistro.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
 
-                    // Crear un objeto JSONObject con los datos de inicio de sesión
-                    JSONObject postData = new JSONObject();
-                    try {
-                        postData.put("name", name);
-                        postData.put("lastName", lastName);
-                        postData.put("email", email);
-                        postData.put("username", username);
-                        postData.put("password", password);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    String serverAddress = "http://34.170.99.24:81/registro.php";
-                    // Crear una solicitud de trabajo OneTimeWorkRequest
-                    OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
-                            .setInputData(new Data.Builder()
-                                    .putString("direccion", serverAddress)
-                                    .putString("datos", postData.toString())
-                                    .build())
-                            .build();
-
-                    // Observar el estado de la solicitud de trabajo
-                    WorkManager.getInstance(MenuRegistro.this).getWorkInfoByIdLiveData(otwr.getId())
-                            .observe(MenuRegistro.this, workInfo -> {
-                                if (workInfo != null && workInfo.getState().isFinished()) {
-                                    String resultado = workInfo.getOutputData().getString("datos");
-                                    // Aquí puedes manejar la respuesta del servidor
-                                    Log.d("Resultado", resultado);
-                                    // Verificar si el usuario existe
-                                    if (!resultado.equals("El nombre de usuario " + username + " ya está en uso.")) {
-                                        databaseHelper.addUser(username, password, email, name, lastName);
-                                        Toast.makeText(MenuRegistro.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(MenuRegistro.this, MainActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    } else {
-                                        Toast.makeText(MenuRegistro.this, getString(R.string.username_exist), Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
-
-                    // Encolar la solicitud de trabajo
-                    WorkManager.getInstance(MenuRegistro.this).enqueue(otwr);
+                        @Override
+                        public void onRegistroFailed() {
+                            Toast.makeText(MenuRegistro.this, getString(R.string.username_exist), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } else {
                     Toast.makeText(MenuRegistro.this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
+
     }
 
     //Método para cargar las preferencias de idioma y color

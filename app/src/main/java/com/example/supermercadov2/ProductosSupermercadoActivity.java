@@ -237,13 +237,14 @@ public class ProductosSupermercadoActivity extends AppCompatActivity implements 
     private void cargarProductosDesdeDB(String nombreSupermercado) {
 
         listaProductos.clear();
-        listaProductos.addAll(databaseHelper.getProductosPorSupermercado(nombreSupermercado));
+        //listaProductos.addAll(databaseHelper.getProductosPorSupermercado(nombreSupermercado));
 
     }
 
     //Método utilizado en el caso de haber añadido un producto
     @Override
     public void onProductoAdded(String nombre, double precio) {
+        /*
         if (!databaseHelper.productoExiste(nombreSupermercado,nombre)){
             databaseHelper.addProductoASupermercado(nombreSupermercado, nombre, precio);
             cargarProductosDesdeDB(nombreSupermercado);
@@ -252,6 +253,8 @@ public class ProductosSupermercadoActivity extends AppCompatActivity implements 
         else {
             Toast.makeText(this, getString(R.string.product_exists), Toast.LENGTH_SHORT).show();
         }
+
+         */
     }
 
     //Método que usa para mostrar una notificación en caso de haber guardado una nota

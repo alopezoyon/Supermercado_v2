@@ -1,6 +1,8 @@
 package com.example.supermercadov2;
 
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -34,7 +36,7 @@ import androidx.work.Data;
 //Hay un actionBar que posibilita ajustar las preferencias de color y de idioma.
 //Hay tres intentos de logIn, aparece un diálogo indicando si has fallado y el número de intentos restantes.
 //Si fallas 3 veces se bloquea los intentos durante 30 segundos.
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DatabaseHelper.LoginCallback{
 
     private EditText edtUsername, edtPassword;
     private Button btnLogin, btnRegister;
@@ -69,51 +71,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String username = edtUsername.getText().toString();
                 String password = edtPassword.getText().toString();
-
-                // Crear un objeto JSONObject con los datos de inicio de sesión
-                JSONObject postData = new JSONObject();
-                try {
-                    postData.put("username", username);
-                    postData.put("password", password);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                String serverAddress = "http://34.170.99.24:81/login.php";
-                // Crear una solicitud de trabajo OneTimeWorkRequest
-                OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
-                        .setInputData(new Data.Builder()
-                                .putString("direccion", serverAddress)
-                                .putString("datos", postData.toString())
-                                .build())
-                        .build();
-
-
-                // Observar el estado de la solicitud de trabajo
-                WorkManager.getInstance(MainActivity.this).getWorkInfoByIdLiveData(otwr.getId())
-                        .observe(MainActivity.this, workInfo -> {
-                            if (workInfo != null && workInfo.getState().isFinished()) {
-                                String resultado = workInfo.getOutputData().getString("datos");
-                                // Aquí puedes manejar la respuesta del servidor
-                                Log.d("Resultado", resultado);
-                                // Verificar si el login fue exitoso
-                                if (resultado.equals("Inicio de sesión exitoso. Bienvenido, " + username + "!")) {
-                                    Intent intent = new Intent(MainActivity.this, MenuPrincipal.class);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    loginAttempts--;
-                                    if (loginAttempts > 0) {
-                                        Toast.makeText(MainActivity.this, "Login fallido. Intentos restantes: " + loginAttempts, Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        blockLoginAttemptsFor30Seconds();
-                                    }
-                                }
-                            }
-                        });
-
-                // Encolar la solicitud de trabajo
-                WorkManager.getInstance(MainActivity.this).enqueue(otwr);
+                DatabaseHelper databaseHelper = new DatabaseHelper(MainActivity.this);
+                databaseHelper.login(username,password, MainActivity.this);
             }
 
         });
@@ -127,6 +86,23 @@ public class MainActivity extends AppCompatActivity {
         });
 
         setSupportActionBar(findViewById(R.id.toolbar));
+    }
+
+    @Override
+    public void onLoginResult(String result) {
+        if (result.equals("exito")) {
+            Intent intent = new Intent(MainActivity.this, MenuPrincipal.class);
+            intent.putExtra("USERNAME_EXTRA", edtUsername.getText().toString());
+            startActivity(intent);
+            finish();
+        } else if (result.equals("fallo")) {
+            loginAttempts--;
+            if (loginAttempts > 0) {
+                Toast.makeText(MainActivity.this, "Login fallido. Intentos restantes: " + loginAttempts, Toast.LENGTH_SHORT).show();
+            } else {
+                blockLoginAttemptsFor30Seconds();
+            }
+        }
     }
 
     //Método para bloquear los intentos de logIn

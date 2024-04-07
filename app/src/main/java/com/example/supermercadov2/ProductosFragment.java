@@ -45,7 +45,7 @@ public class ProductosFragment extends ListFragment {
             String nombreSupermercado = args.getString("nombreSupermercado");
 
             if (nombreSupermercado != null) {
-                cargarProductos(nombreSupermercado);
+                //cargarProductos(nombreSupermercado);
             }
         }
     }
@@ -74,6 +74,7 @@ public class ProductosFragment extends ListFragment {
         elListener.seleccionarElemento(elemento);
     }
 
+    /*
     //Método para cargar los productos de un supemercado determinado
     public void cargarProductos(String nombreSupermercado) {
         listaProductos.clear();
@@ -102,4 +103,6 @@ public class ProductosFragment extends ListFragment {
 
         setListAdapter(adapter);
     }
+
+     */
 }

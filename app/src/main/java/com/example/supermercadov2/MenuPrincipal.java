@@ -28,6 +28,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -42,11 +49,10 @@ import java.util.Locale;
 public class MenuPrincipal extends AppCompatActivity implements
         DialogAgregarSupermercado.OnSupermercadoAddedListener,
         SupermercadosAdapter.OnSupermercadoClickListener,
-        ProductosFragment.listenerDelFragment {
+        ProductosFragment.listenerDelFragment, DatabaseHelper.GetSupermercadosCallback {
 
     private SupermercadosAdapter supermercadosAdapter;
-    private DatabaseHelper databaseHelper;
-    private List<Supermercado> listaSupermercados;
+    private List<Supermercado> listaSupermercados = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,10 +70,7 @@ public class MenuPrincipal extends AppCompatActivity implements
             Log.d("MenuPrincipal", "txtWelcome is null");
         }
 
-        databaseHelper = new DatabaseHelper(this);
-        listaSupermercados = new ArrayList<>();
-
-        cargarSupermercadosDesdeDB();
+        cargarSupermercadosDesdeDB(username);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerViewSupermercados);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -88,9 +91,16 @@ public class MenuPrincipal extends AppCompatActivity implements
     }
 
     //Método para cargar los supermercados guardados en la base de datos
-    private void cargarSupermercadosDesdeDB() {
+    private void cargarSupermercadosDesdeDB(String username) {
+        DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
+        databaseHelper.getSupermercados(username, listaSupermercados, MenuPrincipal.this);
+    }
+
+    @Override
+    public void onSupermercadosLoaded(List<Supermercado> supermercadoList) {
         listaSupermercados.clear();
-        listaSupermercados.addAll(databaseHelper.getSupermercados());
+        listaSupermercados.addAll(supermercadoList);
+        supermercadosAdapter.notifyDataSetChanged();
     }
 
     //Método para cambiar el color del background guardado en preferencias
@@ -139,9 +149,11 @@ public class MenuPrincipal extends AppCompatActivity implements
         }
     }
 
+
     //Método que se usa para añadir un supermercado a la base de datos y volver a cargarlos para que se actualice la lista
     @Override
     public void onSupermercadoAdded(String nombre, String localizacion) {
+        /*
         if (!databaseHelper.supermercadoExiste(nombre)){
             databaseHelper.addSupermercado(nombre, localizacion);
 
@@ -152,6 +164,8 @@ public class MenuPrincipal extends AppCompatActivity implements
         else {
             Toast.makeText(this, getString(R.string.supermarket_exists), Toast.LENGTH_SHORT).show();
         }
+
+         */
     }
 
     @Override
