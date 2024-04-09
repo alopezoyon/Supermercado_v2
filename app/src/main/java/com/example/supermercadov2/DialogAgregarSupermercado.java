@@ -17,14 +17,14 @@ import androidx.annotation.NonNull;
 public class DialogAgregarSupermercado extends Dialog {
 
     private OnSupermercadoAddedListener listener;
+    private String username;
 
-    public DialogAgregarSupermercado(@NonNull Context context, OnSupermercadoAddedListener listener) {
+    public DialogAgregarSupermercado(@NonNull Context context, OnSupermercadoAddedListener listener, String username) {
         super(context);
         this.listener = listener;
+        this.username = username;
     }
 
-    //Método para crear el dialog con su botones y que implementa un listener para añadir el supermercado a la base de datos
-    //en el caso de darle a "Agregar", si se da a "Cancelar" se pierde la información
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,8 +41,8 @@ public class DialogAgregarSupermercado extends Dialog {
                 String localizacion = edtLocalizacion.getText().toString().trim();
 
                 if (!nombre.isEmpty() && !localizacion.isEmpty()) {
-                    listener.onSupermercadoAdded(nombre, localizacion);
-
+                    // Pasar el nombre de usuario al método onSupermercadoAdded
+                    listener.onSupermercadoAdded(nombre, localizacion, username);
                     dismiss();
                 } else {
                     Toast.makeText(getContext(), R.string.completar_campos, Toast.LENGTH_SHORT).show();
@@ -51,11 +51,8 @@ public class DialogAgregarSupermercado extends Dialog {
         });
     }
 
-
-    //Interfaz que implementa el método para añadir el supermercado a la bd
     public interface OnSupermercadoAddedListener {
-        void onSupermercadoAdded(String nombre, String localizacion);
-
+        void onSupermercadoAdded(String nombre, String localizacion, String username);
         void onSupermercadoClick(int position);
     }
 }

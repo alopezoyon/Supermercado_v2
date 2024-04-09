@@ -46,7 +46,7 @@ import java.util.Locale;
 
 //Esta clase implementa el menú donde añadir supermercados.
 //Se muestra al principio un mensaje de bienvenida con el usuario que acaba de hacer logIn
-public class MenuPrincipal extends AppCompatActivity implements
+public  class MenuPrincipal extends AppCompatActivity implements
         DialogAgregarSupermercado.OnSupermercadoAddedListener,
         SupermercadosAdapter.OnSupermercadoClickListener,
         ProductosFragment.listenerDelFragment, DatabaseHelper.GetSupermercadosCallback {
@@ -83,25 +83,28 @@ public class MenuPrincipal extends AppCompatActivity implements
             btnAgregarSupermercado.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    DialogAgregarSupermercado dialog = new DialogAgregarSupermercado(MenuPrincipal.this, MenuPrincipal.this);
+                    DialogAgregarSupermercado dialog = new DialogAgregarSupermercado(MenuPrincipal.this, MenuPrincipal.this, username);
                     dialog.show();
                 }
             });
+
         }
     }
 
-    //Método para cargar los supermercados guardados en la base de datos
+    // Método para cargar los supermercados guardados en la base de datos
     private void cargarSupermercadosDesdeDB(String username) {
         DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
-        databaseHelper.getSupermercados(username, listaSupermercados, MenuPrincipal.this);
+        databaseHelper.getSupermercados(username, new DatabaseHelper.GetSupermercadosCallback() {
+            @Override
+            public void onSupermercadosLoaded(List<Supermercado> supermercadoList) {
+                // Cuando se carguen los supermercados, actualiza la lista y notifica al adaptador
+                listaSupermercados.clear();
+                listaSupermercados.addAll(supermercadoList);
+                supermercadosAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
-    @Override
-    public void onSupermercadosLoaded(List<Supermercado> supermercadoList) {
-        listaSupermercados.clear();
-        listaSupermercados.addAll(supermercadoList);
-        supermercadosAdapter.notifyDataSetChanged();
-    }
 
     //Método para cambiar el color del background guardado en preferencias
     private void changeBackgroundColor(int color) {
@@ -149,24 +152,25 @@ public class MenuPrincipal extends AppCompatActivity implements
         }
     }
 
-
-    //Método que se usa para añadir un supermercado a la base de datos y volver a cargarlos para que se actualice la lista
     @Override
-    public void onSupermercadoAdded(String nombre, String localizacion) {
-        /*
-        if (!databaseHelper.supermercadoExiste(nombre)){
-            databaseHelper.addSupermercado(nombre, localizacion);
+    public void onSupermercadoAdded(String nombre, String localizacion, String username) {
+        DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
+        // Proceder con el registro del supermercado
+        databaseHelper.registrarSupermercado(nombre, localizacion, username, new DatabaseHelper.RegistroSupermercadoCallback() {
+            @Override
+            public void onSupermercadoRegistrado() {
+                // Supermercado registrado exitosamente
+                cargarSupermercadosDesdeDB(username);
+            }
 
-            cargarSupermercadosDesdeDB();
-
-            supermercadosAdapter.notifyDataSetChanged();
-        }
-        else {
-            Toast.makeText(this, getString(R.string.supermarket_exists), Toast.LENGTH_SHORT).show();
-        }
-
-         */
+            @Override
+            public void onRegistroSupermercadoFallido() {
+                // Error al registrar el supermercado
+                Toast.makeText(MenuPrincipal.this,getString(R.string.supermarket_exists), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 
     @Override
     public void onSupermercadoClick(int position) {
@@ -196,5 +200,10 @@ public class MenuPrincipal extends AppCompatActivity implements
 
     @Override
     public void seleccionarElemento(String elemento) {
+    }
+
+    @Override
+    public void onSupermercadosLoaded(List<Supermercado> supermercadoList) {
+
     }
 }

@@ -1,6 +1,7 @@
 package com.example.supermercadov2;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
@@ -121,7 +122,7 @@ public class DatabaseHelper {
 
 
 
-    public void getSupermercados(String username, List<Supermercado> supermercadoList, GetSupermercadosCallback callback){
+    public void getSupermercados(String username, GetSupermercadosCallback callback){
 
         // Crear un objeto JSONObject con los datos de inicio de sesión
         JSONObject postData = new JSONObject();
@@ -140,35 +141,42 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        //Observar el estado de la solicitud de trabajo
+        // Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
                         try {
-                            // Crear un JSONArray a partir del resultado JSON
                             JSONArray jsonArray = new JSONArray(resultado);
+                            Log.d("","..." + jsonArray);
+                            if (!jsonArray.getJSONObject(0).has("message")) {
+                                List<Supermercado> supermercadoList = new ArrayList<>();
 
-                            // Iterar a través del JSONArray para obtener cada objeto JSON
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                // Obtener el objeto JSON actual
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                // Iterar a través del JSONArray para obtener cada objeto JSON
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    // Obtener el objeto JSON actual
+                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-                                // Obtener los datos del supermercado del objeto JSON
-                                String nombreSupermercado = jsonObject.getString("nombre_super");
-                                String localizacion = jsonObject.getString("localizacion");
+                                    // Obtener los datos del supermercado del objeto JSON
+                                    String nombreSupermercado = jsonObject.getString("nombre_super");
+                                    String localizacion = jsonObject.getString("localizacion");
 
-                                // Llamada a obtenerProductosDelSupermercado con un callback para manejar la respuesta de manera asíncrona
-                                obtenerProductosDelSupermercado(nombreSupermercado, productos -> {
-                                    // Crear un objeto de supermercado con los datos obtenidos y la lista de productos
-                                    Supermercado supermercado = new Supermercado(nombreSupermercado, localizacion, productos);
+                                    // Llamada a obtenerProductosDelSupermercado con un callback para manejar la respuesta de manera asíncrona
+                                    obtenerProductosDelSupermercado(jsonObject.getInt("id"), productos -> {
+                                        // Crear un objeto de supermercado con los datos obtenidos y la lista de productos
+                                        Supermercado supermercado = new Supermercado(nombreSupermercado, localizacion, productos);
 
-                                    // Agregar el supermercado al ArrayList
-                                    supermercadoList.add(supermercado);
+                                        Log.d("DatabaseHelper", "Datos super: " + nombreSupermercado + " " + localizacion);
+                                        // Agregar el supermercado al ArrayList
+                                        supermercadoList.add(supermercado);
 
-                                    // Llamar al método de callback cuando se haya terminado de agregar los supermercados
-                                    callback.onSupermercadosLoaded(supermercadoList);
-                                });
+                                        // Llamar al método de callback cuando se haya terminado de agregar los supermercados
+                                        callback.onSupermercadosLoaded(supermercadoList);
+                                    });
+                                }
+                            } else {
+                                // Si la respuesta indica que no hay supermercados, llamar al método de callback con una lista vacía
+                                callback.onSupermercadosLoaded(new ArrayList<>());
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -180,11 +188,11 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
-    public void obtenerProductosDelSupermercado(String nombreSupermercado, GetProductosCallback callback){
+    public void obtenerProductosDelSupermercado(int supermercadoId, GetProductosCallback callback){
 
         JSONObject postData = new JSONObject();
         try {
-            postData.put("nombre_super", nombreSupermercado);
+            postData.put("supermercado_id", supermercadoId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -205,30 +213,34 @@ public class DatabaseHelper {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
                         try {
-                            // Crear un JSONArray a partir del resultado JSON
                             JSONArray jsonArray = new JSONArray(resultado);
+                            Log.d("","..." + jsonArray);
+                            if (!jsonArray.getJSONObject(0).has("message")){
+                                // Crear una lista para almacenar los productos
+                                List<Producto> listaProductos = new ArrayList<>();
 
-                            // Crear una lista para almacenar los productos
-                            List<Producto> listaProductos = new ArrayList<>();
+                                // Iterar a través del JSONArray para obtener cada objeto JSON
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    // Obtener el objeto JSON actual
+                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-                            // Iterar a través del JSONArray para obtener cada objeto JSON
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                // Obtener el objeto JSON actual
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                    // Obtener los datos del producto del objeto JSON
+                                    String nombreProducto = jsonObject.getString("nombre_prod");
+                                    double precio = jsonObject.getDouble("precio");
 
-                                // Obtener los datos del producto del objeto JSON
-                                String nombreProducto = jsonObject.getString("nombre_prod");
-                                double precio = jsonObject.getDouble("precio");
+                                    // Crear un objeto de producto con los datos obtenidos
+                                    Producto producto = new Producto(nombreProducto, precio);
 
-                                // Crear un objeto de producto con los datos obtenidos
-                                Producto producto = new Producto(nombreProducto, precio);
+                                    // Agregar el producto a la lista
+                                    listaProductos.add(producto);
+                                }
 
-                                // Agregar el producto a la lista
-                                listaProductos.add(producto);
+                                // Llamar al método de callback con la lista de productos cuando se haya completado la obtención
+                                callback.onProductosLoaded(listaProductos);
+                            } else {
+                                // Si la respuesta indica que no hay productos, llamar al método de callback con una lista vacía
+                                callback.onProductosLoaded(new ArrayList<>());
                             }
-
-                            // Llamar al método de callback con la lista de productos cuando se haya completado la obtención
-                            callback.onProductosLoaded(listaProductos);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -238,6 +250,9 @@ public class DatabaseHelper {
         // Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
+
+
+
 
     // Interfaz de callback para manejar la respuesta de obtener supermercados
     public interface GetSupermercadosCallback {
@@ -250,50 +265,54 @@ public class DatabaseHelper {
     }
 
 
-    /*
-    //Método para añadir un supermercado
-    public void addSupermercado(String nombre, String localizacion) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_SUPERMERCADO_NOMBRE, nombre);
-        values.put(COLUMN_SUPERMERCADO_LOCALIZACION, localizacion);
-        db.insert(TABLE_SUPERMERCADOS, null, values);
-        db.close();
+
+    public void registrarSupermercado(String nombreSupermercado, String localizacion, String usernameRef, RegistroSupermercadoCallback callback){
+
+        // Crear un objeto JSONObject con los datos del supermercado
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("nombre_super", nombreSupermercado);
+            postData.put("localizacion", localizacion);
+            postData.put("username_ref", usernameRef);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String serverAddress = "http://34.170.99.24:81/registrarSupermercado.php";
+
+        // Crear una solicitud de trabajo OneTimeWorkRequest
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                .setInputData(new Data.Builder()
+                        .putString("direccion", serverAddress)
+                        .putString("datos", postData.toString())
+                        .build())
+                .build();
+
+        // Observar el estado de la solicitud de trabajo
+        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
+                .observeForever(workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        String resultado = workInfo.getOutputData().getString("datos");
+                        // Verificar si el supermercado se registró exitosamente
+                        if (!resultado.equals("El supermercado '" + nombreSupermercado + "' ya está registrado.")) {
+                            // Llamar al método de callback con el resultado de éxito
+                            callback.onSupermercadoRegistrado();
+                        } else {
+                            // Llamar al método de callback con el resultado de fallo
+                            callback.onRegistroSupermercadoFallido();
+                        }
+                    }
+                });
+
+        // Encolar la solicitud de trabajo
+        WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
-    //Método para añadir un producto a un supemercado determinado
-    public void addProductoASupermercado(String nombreSupermercado, String nombreProducto, Double precio) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_SUPERMERCADO_NOMBRE, nombreSupermercado);
-        values.put(COLUMN_PRODUCTO_NOMBRE, nombreProducto);
-        values.put(COLUMN_PRODUCTO_PRECIO, precio);
-        db.insert(TABLE_PRODUCTOS_SUPERMERCADO, null, values);
-        db.close();
+    // Interfaz de callback para manejar el resultado del registro de supermercado
+    public interface RegistroSupermercadoCallback {
+        void onSupermercadoRegistrado();
+        void onRegistroSupermercadoFallido();
     }
-
-    //Método para comprobar que el supermercado no existe ya en la base de datos
-    public boolean supermercadoExiste(String nombreSupermercado) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SUPERMERCADOS +
-                " WHERE " + COLUMN_SUPERMERCADO_NOMBRE + " = ?", new String[]{nombreSupermercado});
-        boolean existe = cursor.getCount() > 0;
-        cursor.close();
-        return existe;
-    }
-
-    //Método para comprobar que el producto no existe ya en la base de datos
-    public boolean productoExiste(String nombreSupermercado, String nombreProducto) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCTOS_SUPERMERCADO +
-                        " WHERE " + COLUMN_SUPERMERCADO_NOMBRE + " = ? AND " + COLUMN_PRODUCTO_NOMBRE + " = ?",
-                new String[]{nombreSupermercado, nombreProducto});
-        boolean existe = cursor.getCount() > 0;
-        cursor.close();
-        return existe;
-    }
-
-     */
 
     public void modificarPrecioProducto(String nombreSupermercado, String nombreProducto, double nuevoPrecio, ModificarPrecioCallback callback) {
         // Crear un objeto JSONObject con los datos del producto
