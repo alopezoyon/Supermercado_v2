@@ -4,6 +4,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-feature android:name="android.hardware.camera2.full" android:required="true"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -16,18 +21,6 @@
         android:theme="@style/Theme.Supermercadov2"
         tools:targetApi="31"
         android:usesCleartextTraffic="true">
-        <activity
-            android:name=".VerNotaActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProductosSupermercadoActivity"
-            android:exported="false" />
-        <activity
-            android:name=".DialogAgregarProducto"
-            android:exported="false" />
-        <activity
-            android:name=".ProductosAdapter"
-            android:exported="false" />
         <activity
             android:name=".SupermercadosAdapter"
             android:exported="false" />

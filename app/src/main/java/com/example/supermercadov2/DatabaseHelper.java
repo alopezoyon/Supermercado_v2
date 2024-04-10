@@ -2,15 +2,12 @@ package com.example.supermercadov2;
 
 import android.content.Context;
 import android.util.Log;
-
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -161,19 +158,16 @@ public class DatabaseHelper {
                                     String nombreSupermercado = jsonObject.getString("nombre_super");
                                     String localizacion = jsonObject.getString("localizacion");
 
-                                    // Llamada a obtenerProductosDelSupermercado con un callback para manejar la respuesta de manera asíncrona
-                                    obtenerProductosDelSupermercado(jsonObject.getInt("id"), productos -> {
-                                        // Crear un objeto de supermercado con los datos obtenidos y la lista de productos
-                                        Supermercado supermercado = new Supermercado(nombreSupermercado, localizacion, productos);
+                                    // Crear un objeto de supermercado con los datos obtenidos
+                                    Supermercado supermercado = new Supermercado(nombreSupermercado, localizacion);
 
-                                        Log.d("DatabaseHelper", "Datos super: " + nombreSupermercado + " " + localizacion);
-                                        // Agregar el supermercado al ArrayList
-                                        supermercadoList.add(supermercado);
-
-                                        // Llamar al método de callback cuando se haya terminado de agregar los supermercados
-                                        callback.onSupermercadosLoaded(supermercadoList);
-                                    });
+                                    Log.d("DatabaseHelper", "Datos super: " + nombreSupermercado + " " + localizacion);
+                                    // Agregar el supermercado al ArrayList
+                                    supermercadoList.add(supermercado);
                                 }
+
+                                // Llamar al método de callback cuando se haya terminado de agregar los supermercados
+                                callback.onSupermercadosLoaded(supermercadoList);
                             } else {
                                 // Si la respuesta indica que no hay supermercados, llamar al método de callback con una lista vacía
                                 callback.onSupermercadosLoaded(new ArrayList<>());
@@ -188,80 +182,10 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
-    public void obtenerProductosDelSupermercado(int supermercadoId, GetProductosCallback callback){
-
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("supermercado_id", supermercadoId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        String serverAddress = "http://34.170.99.24:81/obtenerProductosSupermercado.php";
-
-        // Crear una solicitud de trabajo OneTimeWorkRequest
-        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
-                .setInputData(new Data.Builder()
-                        .putString("direccion", serverAddress)
-                        .putString("datos", postData.toString())
-                        .build())
-                .build();
-
-        // Observar el estado de la solicitud de trabajo
-        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
-                .observeForever(workInfo -> {
-                    if (workInfo != null && workInfo.getState().isFinished()) {
-                        String resultado = workInfo.getOutputData().getString("datos");
-                        try {
-                            JSONArray jsonArray = new JSONArray(resultado);
-                            Log.d("","..." + jsonArray);
-                            if (!jsonArray.getJSONObject(0).has("message")){
-                                // Crear una lista para almacenar los productos
-                                List<Producto> listaProductos = new ArrayList<>();
-
-                                // Iterar a través del JSONArray para obtener cada objeto JSON
-                                for (int i = 0; i < jsonArray.length(); i++) {
-                                    // Obtener el objeto JSON actual
-                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-                                    // Obtener los datos del producto del objeto JSON
-                                    String nombreProducto = jsonObject.getString("nombre_prod");
-                                    double precio = jsonObject.getDouble("precio");
-
-                                    // Crear un objeto de producto con los datos obtenidos
-                                    Producto producto = new Producto(nombreProducto, precio);
-
-                                    // Agregar el producto a la lista
-                                    listaProductos.add(producto);
-                                }
-
-                                // Llamar al método de callback con la lista de productos cuando se haya completado la obtención
-                                callback.onProductosLoaded(listaProductos);
-                            } else {
-                                // Si la respuesta indica que no hay productos, llamar al método de callback con una lista vacía
-                                callback.onProductosLoaded(new ArrayList<>());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-        // Encolar la solicitud de trabajo
-        WorkManager.getInstance(mContext).enqueue(otwr);
-    }
-
-
-
 
     // Interfaz de callback para manejar la respuesta de obtener supermercados
     public interface GetSupermercadosCallback {
         void onSupermercadosLoaded(List<Supermercado> supermercadoList);
-    }
-
-    // Interfaz de callback para manejar la respuesta de obtener productos
-    public interface GetProductosCallback {
-        void onProductosLoaded(List<Producto> productos);
     }
 
 
@@ -314,100 +238,21 @@ public class DatabaseHelper {
         void onRegistroSupermercadoFallido();
     }
 
-    public void modificarPrecioProducto(String nombreSupermercado, String nombreProducto, double nuevoPrecio, ModificarPrecioCallback callback) {
-        // Crear un objeto JSONObject con los datos del producto
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("nombre_super", nombreSupermercado);
-            postData.put("nombre_prod", nombreProducto);
-            postData.put("nuevo_precio", nuevoPrecio);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public void sendImageDataToRemoteDatabase(byte[] imageData, String title) {
+        String serverAddress = "http://34.170.99.24:81/guardarImagen.php";
 
-        String serverAddress = "http://34.170.99.24:81/modificarPrecioProducto.php";
-
-        // Crear una solicitud de trabajo OneTimeWorkRequest
-        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+        // Crear una solicitud de trabajo OneTimeWorkRequest para enviar la imagen al servidor
+        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(ImageUploadWorker.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
-                        .putString("datos", postData.toString())
+                        .putByteArray("imageData", imageData)
+                        .putString("title", title)
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
-        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
-                .observeForever(workInfo -> {
-                    if (workInfo != null && workInfo.getState().isFinished()) {
-                        String resultado = workInfo.getOutputData().getString("datos");
-                        try {
-                            // Verificar si la modificación fue exitosa
-                            boolean modificacionExitosa = new JSONObject(resultado).getBoolean("modificacion_exitosa");
-
-                            // Llamar al método de callback con el resultado de la modificación
-                            callback.onPrecioModificado(modificacionExitosa);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
         // Encolar la solicitud de trabajo
-        WorkManager.getInstance(mContext).enqueue(otwr);
+        WorkManager.getInstance(mContext).enqueue(uploadWorkRequest);
     }
-
-    // Interfaz de callback para manejar el resultado de la modificación del precio
-    public interface ModificarPrecioCallback {
-        void onPrecioModificado(boolean modificacionExitosa);
-    }
-
-
-
-    public void obtenerNombreSupermercado(String nombreProducto, GetNombreSupermercadoCallback callback) {
-        // Crear un objeto JSONObject con los datos del producto
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("nombre_prod", nombreProducto);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        String serverAddress = "http://34.170.99.24:81/obtenerNombreSupermercado.php";
-
-        // Crear una solicitud de trabajo OneTimeWorkRequest
-        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
-                .setInputData(new Data.Builder()
-                        .putString("direccion", serverAddress)
-                        .putString("datos", postData.toString())
-                        .build())
-                .build();
-
-        // Observar el estado de la solicitud de trabajo
-        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
-                .observeForever(workInfo -> {
-                    if (workInfo != null && workInfo.getState().isFinished()) {
-                        String resultado = workInfo.getOutputData().getString("datos");
-                        try {
-                            // Obtener el nombre del supermercado del resultado JSON
-                            String nombreSupermercado = new JSONObject(resultado).getString("nombre_supermercado");
-
-                            // Llamar al método de callback con el nombre del supermercado
-                            callback.onNombreSupermercadoLoaded(nombreSupermercado);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-        // Encolar la solicitud de trabajo
-        WorkManager.getInstance(mContext).enqueue(otwr);
-    }
-
-    // Interfaz de callback para manejar la respuesta de obtener el nombre del supermercado
-    public interface GetNombreSupermercadoCallback {
-        void onNombreSupermercadoLoaded(String nombreSupermercado);
-    }
-
 
 
 }
