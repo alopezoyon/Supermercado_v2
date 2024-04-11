@@ -1,26 +1,19 @@
 package com.example.supermercadov2;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -30,13 +23,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,10 +34,8 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
         SupermercadosAdapter.OnSupermercadoClickListener, DatabaseHelper.GetSupermercadosCallback {
 
     private SupermercadosAdapter supermercadosAdapter;
-    private String currentPhotoPath;
     private List<Supermercado> listaSupermercados = new ArrayList<>();
     private static final int PERMISSION_REQUEST_CAMERA = 1;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +76,14 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
                 @Override
                 public void onClick(View view) {
                     abrirCamara();
+                }
+            });
+
+            Button btnMostrarImagenes = findViewById(R.id.btnMostrarFotos);
+            btnMostrarImagenes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mostrarImagenesDesdeBDRemota();
                 }
             });
 
@@ -187,14 +180,26 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
                     Log.d("TakenPicture", "No photo taken"); }
             });
 
+    private void mostrarImagenesDesdeBDRemota() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
+        databaseHelper.getImagenes(new DatabaseHelper.GetImagenesCallback() {
+            @Override
+            public void onImagenesLoaded(List<String> imagenes) {
+                // Iniciar la nueva actividad y pasar la lista de imágenes como un extra
+                Intent intent = new Intent(MenuPrincipal.this, MostrarImagenes.class);
+                intent.putStringArrayListExtra("IMAGENES_EXTRA", new ArrayList<>(imagenes));
+                startActivity(intent);
+            }
+        });
+    }
+
+
     private void startActivityForResult(Intent elIntent) {
-        //Vacío
     }
 
     // Métodos para manejar la carga de supermercados desde la base de datos
     @Override
     public void onSupermercadosLoaded(List<Supermercado> supermercadoList) {
-        // Implementación para cargar los supermercados desde la base de datos
     }
 
     @Override
@@ -205,4 +210,3 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
     public void onSupermercadoClick(int position, Supermercado supermercado) {
     }
 }
-

@@ -271,5 +271,57 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(uploadWorkRequest);
     }
 
+    public void getImagenes(GetImagenesCallback callback) {
+        String serverAddress = "http://34.170.99.24:81/mostrarImagenes.php";
+
+        // Crear una solicitud de trabajo OneTimeWorkRequest para obtener las imágenes
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                .setInputData(new Data.Builder()
+                        .putString("direccion", serverAddress)
+                        .build())
+                .build();
+
+        // Observar el estado de la solicitud de trabajo
+        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(request.getId())
+                .observeForever(workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        // Obtener el resultado de la solicitud de trabajo
+                        String resultado = workInfo.getOutputData().getString("datos");
+
+                        if (resultado != null) {
+                            try {
+                                // Convertir la respuesta JSON en un JSONArray
+                                JSONArray jsonArray = new JSONArray(resultado);
+
+                                // Crear una lista para almacenar las imágenes
+                                List<String> imagenes = new ArrayList<>();
+
+                                // Recorrer el JSONArray y agregar cada imagen a la lista
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    imagenes.add(jsonArray.getString(i));
+                                }
+
+                                // Llamar al método de callback con la lista de imágenes cargadas
+                                callback.onImagenesLoaded(imagenes);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                // Si hay un error al procesar la respuesta JSON, llamar al método de callback con una lista vacía
+                                callback.onImagenesLoaded(new ArrayList<>());
+                            }
+                        } else {
+                            // Si no hay resultado, llamar al método de callback con una lista vacía
+                            callback.onImagenesLoaded(new ArrayList<>());
+                        }
+                    }
+                });
+
+        // Encolar la solicitud de trabajo
+        WorkManager.getInstance(mContext).enqueue(request);
+    }
+
+    public interface GetImagenesCallback {
+        void onImagenesLoaded(List<String> imagenes);
+    }
+
 
 }
