@@ -1,6 +1,8 @@
 package com.example.supermercadov2;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Base64;
 import android.util.Log;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
@@ -8,6 +10,8 @@ import androidx.work.WorkManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -238,15 +242,28 @@ public class DatabaseHelper {
         void onRegistroSupermercadoFallido();
     }
 
-    public void sendImageDataToRemoteDatabase(byte[] imageData, String title) {
+    public void sendImageDataToRemoteDatabase(Bitmap imageData, String title) {
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        imageData.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] fototransformada = stream.toByteArray();
+        String fotoen64 = Base64.encodeToString(fototransformada,Base64.DEFAULT);
+
+        // Crear un objeto JSONObject con los datos del supermercado
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("title", title);
+            postData.put("imageData", fotoen64);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         String serverAddress = "http://34.170.99.24:81/guardarImagen.php";
 
         // Crear una solicitud de trabajo OneTimeWorkRequest para enviar la imagen al servidor
-        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(ImageUploadWorker.class)
+        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
-                        .putByteArray("imageData", imageData)
-                        .putString("title", title)
+                        .putString("datos", postData.toString())
                         .build())
                 .build();
 

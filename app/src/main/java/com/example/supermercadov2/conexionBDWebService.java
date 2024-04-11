@@ -44,7 +44,7 @@ public class conexionBDWebService extends Worker {
             PrintWriter out = new PrintWriter(urlConnection.getOutputStream());
             out.print(getInputData().getString("datos"));
             out.close();
-            Log.d("NombreDeTuTag", "Datos escritos en el flujo: " + getInputData().getString("datos"));
+            Log.d("conexionBD", "Datos escritos en el flujo: " + getInputData().getString("datos"));
 
             // Leer la respuesta del servidor
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));

@@ -17,6 +17,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +33,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -147,89 +151,44 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
         });
     }
 
-    // Método para manejar el resultado de la captura de la imagen
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            // La imagen se capturó correctamente, ahora puedes procesarla
-            processCapturedImage();
-        } else {
-            // Error o cancelación en la captura de la imagen
-            Toast.makeText(this, "Error al capturar la imagen", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Método para procesar la imagen capturada
-    private void processCapturedImage() {
-        // Se obtiene la imagen capturada del archivo
-        Bitmap imageBitmap = BitmapFactory.decodeFile(currentPhotoPath);
-        if (imageBitmap != null) {
-            // Convertir la imagen en un array de bytes
-            byte[] imageData = bitmapToByteArray(imageBitmap);
-            // Obtener la marca de tiempo
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault());
-            String currentTime = sdf.format(new Date());
-            // Enviar la imagen a la base de datos remota
-            DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
-            databaseHelper.sendImageDataToRemoteDatabase(imageData, currentTime);
-        } else {
-            // La imagen no se pudo cargar correctamente
-            Toast.makeText(this, "Error al cargar la imagen capturada", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Método para convertir un bitmap en un array de bytes
-    private byte[] bitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        return stream.toByteArray();
-    }
-
     // Método para abrir la cámara y capturar una imagen
     private void abrirCamara() {
-        Log.d("MenuPrincipal", "Se intenta abrir la cámara");
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        try {
-            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                // Crear un archivo donde guardar la imagen
-                File photoFile = null;
-                try {
-                    photoFile = createImageFile();
-                } catch (IOException ex) {
-                    Log.e("MenuPrincipal", "Error al crear el archivo de imagen: " + ex.getMessage());
-                }
-                // Continuar solo si el archivo se creó correctamente
-                if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this,
-                            "com.example.supermercadov2.fileprovider",
-                            photoFile);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    // Iniciar la actividad de la cámara y esperar el resultado
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
-            }
-        } catch (ActivityNotFoundException e) {
-            Log.e("MenuPrincipal", "Error al lanzar la actividad de la cámara: " + e.getMessage());
-        }
+        takePictureLauncher.launch(takePictureIntent);
     }
 
-    // Método para crear un archivo de imagen temporal
-    private File createImageFile() throws IOException {
-        // Crear un nombre de archivo único basado en la fecha y hora actuales
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefijo */
-                ".jpg",         /* sufijo */
-                storageDir      /* directorio */
-        );
+    private ActivityResultLauncher<Intent> takePictureLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Bundle bundle = result.getData().getExtras();
+                    Bitmap laminiatura = (Bitmap) bundle.get("data");
+                    //ImageView elImageView = findViewById(R.id.imgThumbnail);
+                    //elImageView.setImageBitmap(laminiatura);
+                    File eldirectorio = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+                    String nombrefichero = "IMG_" + timeStamp + "_";
+                    File fichImg = null;
+                    Uri uriimagen = null;
+                    try {
+                        fichImg = File.createTempFile(nombrefichero, ".jpg",eldirectorio);
+                        uriimagen = FileProvider.getUriForFile(this, "com.example.supermercadov2.fileprovider", fichImg);
 
-        // Guardar la ruta del archivo para usarla más tarde
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
+                        // Enviar la imagen a la base de datos remota
+                        DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
+                        Log.d("MenuPrincipal","El título de la imagen es " + nombrefichero);
+                        databaseHelper.sendImageDataToRemoteDatabase(laminiatura, nombrefichero);
+                    }
+                    catch (Exception e) { e.printStackTrace(); }
+                    Intent elIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    elIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriimagen);
+                    startActivityForResult(elIntent);
+                }
+                else {
+                    Log.d("TakenPicture", "No photo taken"); }
+            });
+
+    private void startActivityForResult(Intent elIntent) {
+        //Vacío
     }
 
     // Métodos para manejar la carga de supermercados desde la base de datos
