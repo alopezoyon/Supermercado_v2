@@ -280,7 +280,7 @@ public class DatabaseHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        String serverAddress = "http://34.170.99.24:81/mostrarImagenes.php";
+        String serverAddress = "http://34.170.99.24:81/uploads/uploaded_image.jpg";
 
         // Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
