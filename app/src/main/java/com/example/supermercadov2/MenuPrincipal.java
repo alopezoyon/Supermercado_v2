@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -182,16 +184,23 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
 
     private void mostrarImagenesDesdeBDRemota() {
         DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
-        databaseHelper.getImagenes(new DatabaseHelper.GetImagenesCallback() {
+        databaseHelper.getImagenes(new DatabaseHelper.GetImagenCallback() {
             @Override
-            public void onImagenesLoaded(List<String> imagenes) {
-                // Iniciar la nueva actividad y pasar la lista de imágenes como un extra
-                Intent intent = new Intent(MenuPrincipal.this, MostrarImagenes.class);
-                intent.putStringArrayListExtra("IMAGENES_EXTRA", new ArrayList<>(imagenes));
-                startActivity(intent);
+            public void onImagenLoaded(Bitmap imagen) {
+                // Verificar si se cargó la imagen
+                if (imagen != null) {
+                    // Iniciar la nueva actividad y pasar la imagen como un extra
+                    Intent intent = new Intent(MenuPrincipal.this, MostrarImagenes.class);
+                    intent.putExtra("IMAGEN_EXTRA", imagen);
+                    startActivity(intent);
+                } else {
+                    // Manejar el caso en el que no se cargó la imagen
+                    Toast.makeText(MenuPrincipal.this, "No se encontró la imagen.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
+
 
 
     private void startActivityForResult(Intent elIntent) {

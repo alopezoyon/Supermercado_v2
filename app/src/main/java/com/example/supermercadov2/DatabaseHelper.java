@@ -2,6 +2,7 @@ package com.example.supermercadov2;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
 import androidx.work.Data;
@@ -271,13 +272,21 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(uploadWorkRequest);
     }
 
-    public void getImagenes(GetImagenesCallback callback) {
+    public void getImagenes(GetImagenCallback callback) {
+        // Crear un objeto JSONObject con los datos del supermercado
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("algo", "Enviando...");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         String serverAddress = "http://34.170.99.24:81/mostrarImagenes.php";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest para obtener las imágenes
-        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+        // Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
+                        .putString("datos", postData.toString())
                         .build())
                 .build();
 
@@ -286,31 +295,23 @@ public class DatabaseHelper {
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         // Obtener el resultado de la solicitud de trabajo
-                        String resultado = workInfo.getOutputData().getString("datos");
+                        Data outputData = workInfo.getOutputData();
 
-                        if (resultado != null) {
-                            try {
-                                // Convertir la respuesta JSON en un JSONArray
-                                JSONArray jsonArray = new JSONArray(resultado);
-
-                                // Crear una lista para almacenar las imágenes
-                                List<String> imagenes = new ArrayList<>();
-
-                                // Recorrer el JSONArray y agregar cada imagen a la lista
-                                for (int i = 0; i < jsonArray.length(); i++) {
-                                    imagenes.add(jsonArray.getString(i));
-                                }
-
-                                // Llamar al método de callback con la lista de imágenes cargadas
-                                callback.onImagenesLoaded(imagenes);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                // Si hay un error al procesar la respuesta JSON, llamar al método de callback con una lista vacía
-                                callback.onImagenesLoaded(new ArrayList<>());
+                        if (outputData != null) {
+                            // Verificar si el resultado es una imagen
+                            byte[] imagenBytes = outputData.getByteArray("imagen");
+                            if (imagenBytes != null && imagenBytes.length > 0) {
+                                // La respuesta es una imagen
+                                Bitmap imagenBitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                                // Llamar al método de callback con la imagen cargada
+                                callback.onImagenLoaded(imagenBitmap);
+                            } else {
+                                // Si no hay imagen, llamar al método de callback con null
+                                callback.onImagenLoaded(null);
                             }
                         } else {
-                            // Si no hay resultado, llamar al método de callback con una lista vacía
-                            callback.onImagenesLoaded(new ArrayList<>());
+                            // Si no hay datos de salida, llamar al método de callback con null
+                            callback.onImagenLoaded(null);
                         }
                     }
                 });
@@ -319,9 +320,11 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(request);
     }
 
-    public interface GetImagenesCallback {
-        void onImagenesLoaded(List<String> imagenes);
+    // Interfaz de callback para manejar la carga de una imagen
+    public interface GetImagenCallback {
+        void onImagenLoaded(Bitmap imagen);
     }
+
 
 
 }

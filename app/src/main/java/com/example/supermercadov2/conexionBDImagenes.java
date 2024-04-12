@@ -10,6 +10,7 @@ import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,9 +19,9 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class conexionBDWebService extends Worker {
+public class conexionBDImagenes extends Worker {
 
-    public conexionBDWebService(@NonNull Context context, @NonNull WorkerParameters params) {
+    public conexionBDImagenes(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
     }
 
@@ -50,18 +51,17 @@ public class conexionBDWebService extends Worker {
             Log.d("conexionBD", "Datos escritos en el flujo: " + getInputData().getString("datos"));
 
             // Leer la respuesta del servidor
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                response.append(line);
-            }
-            Log.d("conexionBD","Esta es la respuesta del server: " + response);
-            bufferedReader.close();
+            Bitmap elBitmap= BitmapFactory.decodeStream(urlConnection.getInputStream());
+            Log.d("conexionBD","Esta es la respuesta del server: " + elBitmap);
+
+            // Convertir el Bitmap a byte[]
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            elBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
 
             // Devolver el resultado como datos de salida
-            String resultado = response.toString();
-            Data outputData = new Data.Builder().putString("datos", resultado).build();
+            Data outputData = new Data.Builder().putByteArray("imagen", byteArray).build();
+            Log.d("conexionBD","Esta es la respuesta de salida: " + outputData);
             return Result.success(outputData);
 
         } catch (IOException e) {
