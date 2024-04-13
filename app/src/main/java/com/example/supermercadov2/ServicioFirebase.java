@@ -19,8 +19,9 @@ public class ServicioFirebase extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
+        Log.d(TAG, "Mensaje recibido: " + remoteMessage);
 
-        if (remoteMessage.getData().size() > 0) {
+        if (!remoteMessage.getData().isEmpty()) {
             // Aquí puedes manejar los datos del mensaje
             // Por ejemplo, extraer el texto del mensaje y mostrarlo en la consola
             String mensaje = remoteMessage.getData().get("mensaje");

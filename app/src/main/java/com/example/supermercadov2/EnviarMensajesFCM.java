@@ -2,6 +2,7 @@ package com.example.supermercadov2;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+
+import org.json.JSONObject;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -36,16 +39,15 @@ public class EnviarMensajesFCM extends AppCompatActivity {
             }
         });
 
-        // Suscribirse a un tópico de FCM
-        FirebaseMessaging.getInstance().subscribeToTopic("todos")
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(EnviarMensajesFCM.this, "Suscrito al tópico 'todos'", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(EnviarMensajesFCM.this, "Error al suscribirse al tópico", Toast.LENGTH_SHORT).show();
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            return;
                         }
+                        String token = task.getResult();
+                        Log.d("EnviarMensajesFCM","El token es :" + token);
                     }
                 });
     }
@@ -61,11 +63,20 @@ public class EnviarMensajesFCM extends AppCompatActivity {
                     // Crear una conexión HTTP
                     HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                     urlConnection.setRequestMethod("POST");
+                    urlConnection.setRequestProperty("Content-Type", "application/json");
+                    urlConnection.setRequestProperty("Authorization", "key=AIzaSyAAnbdEBUuJto2LrcdTVffVBxo3KqaLXGM");
+                    urlConnection.setDoOutput(true);
+
+                    // Cuerpo del mensaje
+                    JSONObject jsonMessage = new JSONObject();
+                    jsonMessage.put("to", "/topics/todos");
+                    JSONObject data = new JSONObject();
+                    data.put("mensaje", mensajeEditText.getText().toString());
+                    jsonMessage.put("data", data);
 
                     // Escribir los datos del mensaje en el cuerpo de la solicitud
-                    urlConnection.setDoOutput(true);
                     OutputStream outputStream = urlConnection.getOutputStream();
-                    outputStream.write("mensaje=Usando FCM".getBytes());
+                    outputStream.write(jsonMessage.toString().getBytes("UTF-8"));
                     outputStream.flush();
                     outputStream.close();
 
@@ -76,6 +87,7 @@ public class EnviarMensajesFCM extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                Log.d("EnviarMensajesFCM","Se ha enviado el mensaje correctamente");
                                 Toast.makeText(EnviarMensajesFCM.this, "Mensaje enviado correctamente", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -84,6 +96,7 @@ public class EnviarMensajesFCM extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                Log.d("EnviarMensajesFCM","Error al enviar el mensaje " + responseCode);
                                 Toast.makeText(EnviarMensajesFCM.this, "Error al enviar el mensaje", Toast.LENGTH_SHORT).show();
                             }
                         });

@@ -1,6 +1,5 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-    //id 'com.android.application'
+    id 'com.android.application'
     id 'com.google.gms.google-services'
 }
 
@@ -31,7 +30,6 @@ android {
 }
 
 dependencies {
-
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
