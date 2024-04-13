@@ -24,6 +24,19 @@
         android:theme="@style/Theme.Supermercadov2"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+        <service
+            android:name=".ServicioFirebase"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".EnviarMensajesFCM"
+            android:exported="false" />
         <activity
             android:name=".MostrarImagenes"
             android:exported="false" />

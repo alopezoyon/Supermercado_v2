@@ -70,4 +70,13 @@
         android:layout_marginBottom="16dp"
         android:text="Mostrar fotos" />
 
+    <Button
+        android:id="@+id/btnEnviarMensajes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnMostrarFotos"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:text="Enviar Mensajes" />
+
 </RelativeLayout>

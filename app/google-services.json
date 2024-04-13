@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "216195231121",
+    "project_id": "das-24",
+    "storage_bucket": "das-24.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216195231121:android:bb1bef26cca6f996b37e30",
+        "android_client_info": {
+          "package_name": "com.example.supermercadov2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAnbdEBUuJto2LrcdTVffVBxo3KqaLXGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

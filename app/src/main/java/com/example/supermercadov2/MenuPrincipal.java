@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -89,6 +90,15 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
                 }
             });
 
+            Button btnEnviarMensajes = findViewById(R.id.btnEnviarMensajes);
+            btnEnviarMensajes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(MenuPrincipal.this, EnviarMensajesFCM.class);
+                    startActivity(intent);
+                }
+            });
+
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -97,6 +107,16 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
                     new String[]{Manifest.permission.CAMERA},
                     PERMISSION_REQUEST_CAMERA);
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)!=
+                    PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 11);
+            }
+        }
+
     }
 
     @Override
