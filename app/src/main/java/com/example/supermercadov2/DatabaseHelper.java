@@ -272,58 +272,60 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(uploadWorkRequest);
     }
 
-    public void getImagenes(GetImagenCallback callback) {
-        // Crear un objeto JSONObject con los datos del supermercado
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("algo", "Enviando...");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        String serverAddress = "http://34.170.99.24:81/uploads/uploaded_image.jpg";
+        public void getImagenes(GetImagenCallback callback) {
+            // Crear un objeto JSONObject con los datos del supermercado
+            JSONObject postData = new JSONObject();
+            try {
+                postData.put("algo", "Enviando...");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String serverAddress = "http://34.170.99.24:81/uploads/uploaded_image.jpg";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
-        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
-                .setInputData(new Data.Builder()
-                        .putString("direccion", serverAddress)
-                        .putString("datos", postData.toString())
-                        .build())
-                .build();
+            // Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
+            OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
+                    .setInputData(new Data.Builder()
+                            .putString("direccion", serverAddress)
+                            .putString("datos", postData.toString())
+                            .build())
+                    .build();
 
-        // Observar el estado de la solicitud de trabajo
-        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(request.getId())
-                .observeForever(workInfo -> {
-                    if (workInfo != null && workInfo.getState().isFinished()) {
-                        // Obtener el resultado de la solicitud de trabajo
-                        Data outputData = workInfo.getOutputData();
+            // Observar el estado de la solicitud de trabajo
+            WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(request.getId())
+                    .observeForever(workInfo -> {
+                        if (workInfo != null && workInfo.getState().isFinished()) {
+                            // Obtener el resultado de la solicitud de trabajo
+                            Data outputData = workInfo.getOutputData();
 
-                        if (outputData != null) {
-                            // Verificar si el resultado es una imagen
-                            byte[] imagenBytes = outputData.getByteArray("imagen");
-                            if (imagenBytes != null && imagenBytes.length > 0) {
-                                // La respuesta es una imagen
-                                Bitmap imagenBitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-                                // Llamar al método de callback con la imagen cargada
-                                callback.onImagenLoaded(imagenBitmap);
+                            if (outputData != null) {
+                                // Verificar si el resultado es una imagen
+                                byte[] imagenBytes = outputData.getByteArray("imagen");
+                                if (imagenBytes != null && imagenBytes.length > 0) {
+                                    // La respuesta es una imagen
+                                    Bitmap imagenBitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                                    // Llamar al método de callback con la imagen cargada
+                                    callback.onImagenLoaded(imagenBitmap);
+                                } else {
+                                    // Si no hay imagen, llamar al método de callback con null
+                                    callback.onImagenLoaded(null);
+                                }
                             } else {
-                                // Si no hay imagen, llamar al método de callback con null
+                                // Si no hay datos de salida, llamar al método de callback con null
                                 callback.onImagenLoaded(null);
                             }
-                        } else {
-                            // Si no hay datos de salida, llamar al método de callback con null
-                            callback.onImagenLoaded(null);
                         }
-                    }
-                });
+                    });
 
-        // Encolar la solicitud de trabajo
-        WorkManager.getInstance(mContext).enqueue(request);
-    }
+            // Encolar la solicitud de trabajo
+            WorkManager.getInstance(mContext).enqueue(request);
+        }
 
-    // Interfaz de callback para manejar la carga de una imagen
-    public interface GetImagenCallback {
-        void onImagenLoaded(Bitmap imagen);
-    }
+        // Interfaz de callback para manejar la carga de una imagen
+        public interface GetImagenCallback {
+            void onImagenLoaded(Bitmap imagen);
+        }
+
+
 
 
 
