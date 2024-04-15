@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -243,7 +244,7 @@ public class DatabaseHelper {
         void onRegistroSupermercadoFallido();
     }
 
-    public void sendImageDataToRemoteDatabase(Bitmap imageData, String title) {
+    public void sendImageDataToRemoteDatabase(Bitmap imageData, String title, String user, String nombre_super) {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         imageData.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -255,6 +256,8 @@ public class DatabaseHelper {
         try {
             postData.put("title", title);
             postData.put("imageData", fotoen64);
+            postData.put("user", user);
+            postData.put("supermercado", nombre_super);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -272,15 +275,15 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).enqueue(uploadWorkRequest);
     }
 
-        public void getImagenes(GetImagenCallback callback) {
-            // Crear un objeto JSONObject con los datos del supermercado
+        public void getImagenes(String titulo, String user, String supermercado, GetImagenCallback callback) {
+
             JSONObject postData = new JSONObject();
             try {
                 postData.put("algo", "Enviando...");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            String serverAddress = "http://34.170.99.24:81/uploads/uploaded_image.jpg";
+            String serverAddress = "http://34.170.99.24:81/uploads/" + titulo + "_" + user + "_" + supermercado + ".jpg";
 
             // Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
             OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
@@ -325,8 +328,48 @@ public class DatabaseHelper {
             void onImagenLoaded(Bitmap imagen);
         }
 
+    public void getTitulosImagenes(String username, String nombreSupermercado, GetTitulosImagenesCallback callback) {
+        // Crear un objeto JSONObject con los datos del usuario y el supermercado
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("username", username);
+            postData.put("nombre_supermercado", nombreSupermercado);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String serverAddress = "http://34.170.99.24:81/obtenerImagenesUsuario.php";
+
+        // Crear una solicitud de trabajo OneTimeWorkRequest
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                .setInputData(new Data.Builder()
+                        .putString("direccion", serverAddress)
+                        .putString("datos", postData.toString())
+                        .build())
+                .build();
+
+        // Observar el estado de la solicitud de trabajo
+        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
+                .observeForever(workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        String[] titulosImagenes = workInfo.getOutputData().getStringArray("datos");
+                        if (titulosImagenes != null) {
+                            // Llamar al método de callback con los títulos de imágenes obtenidos
+                            callback.onTitulosImagenesLoaded(Arrays.asList(titulosImagenes));
+                        } else {
+                            // Manejar el caso en el que no se obtuvieron los títulos de imágenes
+                            callback.onTitulosImagenesLoaded(new ArrayList<>());
+                        }
+                    }
+                });
+
+        // Encolar la solicitud de trabajo
+        WorkManager.getInstance(mContext).enqueue(otwr);
+    }
 
 
-
+    public interface GetTitulosImagenesCallback {
+        void onTitulosImagenesLoaded(List<String> titulosImagenes);
+    }
 
 }

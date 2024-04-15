@@ -54,7 +54,6 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
 
     private SupermercadosAdapter supermercadosAdapter;
     private List<Supermercado> listaSupermercados = new ArrayList<>();
-    private static final int PERMISSION_REQUEST_CAMERA = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,83 +79,57 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
 
         Button btnAgregarSupermercado = findViewById(R.id.btnAgregarSupermercado);
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            btnAgregarSupermercado.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    DialogAgregarSupermercado dialog = new DialogAgregarSupermercado(MenuPrincipal.this, MenuPrincipal.this, username);
-                    dialog.show();
-                }
-            });
+        btnAgregarSupermercado.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DialogAgregarSupermercado dialog = new DialogAgregarSupermercado(MenuPrincipal.this, MenuPrincipal.this, username);
+                dialog.show();
+            }
+        });
 
-            // Agregar el clic del botón "Sacar foto"
-            Button btnSacarFoto = findViewById(R.id.btnSacarFoto);
-            btnSacarFoto.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    abrirCamara();
-                }
-            });
 
-            Button btnMostrarImagenes = findViewById(R.id.btnMostrarFotos);
-            btnMostrarImagenes.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mostrarImagenesDesdeBDRemota();
-                }
-            });
-
-            Button btnEnviarMensajes = findViewById(R.id.btnEnviarMensajes);
-            btnEnviarMensajes.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // Obtén el token actualizado y envíalo al servidor
-                    FirebaseMessaging.getInstance().getToken()
-                            .addOnCompleteListener(new OnCompleteListener<String>() {
-                                @Override
-                                public void onComplete(@NonNull Task<String> task) {
-                                    if (!task.isSuccessful()) {
-                                        Log.w("MenuPrincipal", "No se pudo obtener el token", task.getException());
-                                        return;
-                                    }
-
-                                    // Obtén el token
-                                    String token = task.getResult();
-
-                                    // Crear un objeto JSONObject con el token
-                                    JSONObject postData = new JSONObject();
-                                    try {
-                                        postData.put("token", token);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    // Dirección del servidor
-                                    String serverAddress = "http://34.170.99.24:81/enviarMensajes.php";
-
-                                    // Crear una solicitud de trabajo OneTimeWorkRequest para enviar el token
-                                    OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
-                                            .setInputData(new Data.Builder()
-                                                    .putString("direccion", serverAddress)
-                                                    .putString("datos", postData.toString())
-                                                    .build())
-                                            .build();
-
-                                    // Encolar la solicitud de trabajo
-                                    WorkManager.getInstance(MenuPrincipal.this).enqueue(request);
+        Button btnEnviarMensajes = findViewById(R.id.btnEnviarMensajes);
+        btnEnviarMensajes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Obtén el token actualizado y envíalo al servidor
+                FirebaseMessaging.getInstance().getToken()
+                        .addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                if (!task.isSuccessful()) {
+                                    Log.w("MenuPrincipal", "No se pudo obtener el token", task.getException());
+                                    return;
                                 }
-                            });
-                }
-            });
 
-        }
+                                // Obtén el token
+                                String token = task.getResult();
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    PERMISSION_REQUEST_CAMERA);
-        }
+                                // Crear un objeto JSONObject con el token
+                                JSONObject postData = new JSONObject();
+                                try {
+                                    postData.put("token", token);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                // Dirección del servidor
+                                String serverAddress = "http://34.170.99.24:81/enviarMensajes.php";
+
+                                // Crear una solicitud de trabajo OneTimeWorkRequest para enviar el token
+                                OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                                        .setInputData(new Data.Builder()
+                                                .putString("direccion", serverAddress)
+                                                .putString("datos", postData.toString())
+                                                .build())
+                                        .build();
+
+                                // Encolar la solicitud de trabajo
+                                WorkManager.getInstance(MenuPrincipal.this).enqueue(request);
+                            }
+                        });
+            }
+        });
 
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -185,19 +158,6 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
         }
 
 
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CAMERA) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("MenuPrincipal","Permisos concedidos");
-            } else {
-                // Permiso de cámara denegado, mostrar un mensaje o realizar otra acción
-                Toast.makeText(this, "Se requiere permiso de cámara para usar esta función", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     // Método para cargar los supermercados guardados en la base de datos
@@ -233,67 +193,6 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
             }
         });
     }
-
-    // Método para abrir la cámara y capturar una imagen
-    private void abrirCamara() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        takePictureLauncher.launch(takePictureIntent);
-    }
-
-    private ActivityResultLauncher<Intent> takePictureLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Bundle bundle = result.getData().getExtras();
-                    Bitmap laminiatura = (Bitmap) bundle.get("data");
-                    //ImageView elImageView = findViewById(R.id.imgThumbnail);
-                    //elImageView.setImageBitmap(laminiatura);
-                    File eldirectorio = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-                    String nombrefichero = "IMG_" + timeStamp + "_";
-                    File fichImg = null;
-                    Uri uriimagen = null;
-                    try {
-                        fichImg = File.createTempFile(nombrefichero, ".jpg",eldirectorio);
-                        uriimagen = FileProvider.getUriForFile(this, "com.example.supermercadov2.fileprovider", fichImg);
-
-                        // Enviar la imagen a la base de datos remota
-                        DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
-                        Log.d("MenuPrincipal","El título de la imagen es " + nombrefichero);
-                        databaseHelper.sendImageDataToRemoteDatabase(laminiatura, nombrefichero);
-                    }
-                    catch (Exception e) { e.printStackTrace(); }
-                    Intent elIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    elIntent.putExtra(MediaStore.EXTRA_OUTPUT, uriimagen);
-                    startActivityForResult(elIntent);
-                }
-                else {
-                    Log.d("TakenPicture", "No photo taken"); }
-            });
-
-    private void mostrarImagenesDesdeBDRemota() {
-        DatabaseHelper databaseHelper = new DatabaseHelper(MenuPrincipal.this);
-        databaseHelper.getImagenes(new DatabaseHelper.GetImagenCallback() {
-            @Override
-            public void onImagenLoaded(Bitmap imagen) {
-                // Verificar si se cargó la imagen
-                if (imagen != null) {
-                    // Iniciar la nueva actividad y pasar la imagen como un extra
-                    Intent intent = new Intent(MenuPrincipal.this, MostrarImagenes.class);
-                    intent.putExtra("IMAGEN_EXTRA", imagen);
-                    startActivity(intent);
-                } else {
-                    // Manejar el caso en el que no se cargó la imagen
-                    Toast.makeText(MenuPrincipal.this, "No se encontró la imagen.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-
-
-    private void startActivityForResult(Intent elIntent) {
-    }
-
     // Métodos para manejar la carga de supermercados desde la base de datos
     @Override
     public void onSupermercadosLoaded(List<Supermercado> supermercadoList) {
@@ -303,7 +202,14 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
     public void onSupermercadoClick(int position) {
     }
 
+    //Método que implementa Fragments. En el caso de posición horizontal, si se pulsa un supermercado,
+    //se muestran los productos de ese supermercado.
+    //Sino vas al menú de productos del supermercado.
     @Override
     public void onSupermercadoClick(int position, Supermercado supermercado) {
+        Intent intent = new Intent(MenuPrincipal.this, OpcionesEnSupermercado.class);
+        intent.putExtra("NOMBRE_SUPERMERCADO", supermercado.getNombre());
+        intent.putExtra("USERNAME_EXTRA", getIntent().getStringExtra("USERNAME_EXTRA"));
+        startActivity(intent);
     }
 }
