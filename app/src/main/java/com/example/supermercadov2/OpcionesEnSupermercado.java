@@ -28,6 +28,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -146,15 +147,20 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
         DatabaseHelper databaseHelper = new DatabaseHelper(OpcionesEnSupermercado.this);
         databaseHelper.getTitulosImagenes(getIntent().getStringExtra("USERNAME_EXTRA"), getIntent().getStringExtra("NOMBRE_SUPERMERCADO"), new DatabaseHelper.GetTitulosImagenesCallback() {
             @Override
-            public void onTitulosImagenesLoaded(List<String> titulosImagenes) {
+            public void onTitulosImagenesLoaded(String[] titulosImagenes) {
                 // Mostrar los títulos de imágenes en un diálogo y permitir al usuario elegir uno
                 AlertDialog.Builder builder = new AlertDialog.Builder(OpcionesEnSupermercado.this);
                 builder.setTitle("Títulos de imágenes disponibles");
-                builder.setItems(titulosImagenes.toArray(new String[0]), new DialogInterface.OnClickListener() {
+                String[] titulosSeparados = new String[titulosImagenes.length];
+                for (int i = 0; i < titulosImagenes.length; i++) {
+                    titulosSeparados[i] = titulosImagenes[i] + "\n"; // Puedes añadir espacios u otros separadores si deseas
+                    Log.d("Imágenes", titulosSeparados[i]);
+                }
+                builder.setItems(titulosSeparados, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         // El usuario ha seleccionado un título de imagen, ahora puedes mostrar la imagen asociada
-                        mostrarImagenesDesdeBDRemota(titulosImagenes.get(i));
+                        mostrarImagenesDesdeBDRemota(titulosSeparados[i]);
                     }
                 });
                 builder.show();

@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -352,13 +353,21 @@ public class DatabaseHelper {
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
-                        String[] titulosImagenes = workInfo.getOutputData().getStringArray("datos");
+                        String titulosImagenes = workInfo.getOutputData().getString("datos");
+                        Log.d("DatabaseHelper", titulosImagenes);
                         if (titulosImagenes != null) {
+                            titulosImagenes = titulosImagenes.substring(1, titulosImagenes.length() - 1);
+                            titulosImagenes = titulosImagenes.replaceAll("\"", "");
+                            // Dividir la cadena en un array de cadenas usando ","
+                            String[] titulosArray = titulosImagenes.split(",");
+                            for (int i = 0; i < titulosArray.length; i++) {
+                                titulosArray[i] = titulosArray[i].trim();
+                            }
                             // Llamar al método de callback con los títulos de imágenes obtenidos
-                            callback.onTitulosImagenesLoaded(Arrays.asList(titulosImagenes));
+                            callback.onTitulosImagenesLoaded(titulosArray);
                         } else {
                             // Manejar el caso en el que no se obtuvieron los títulos de imágenes
-                            callback.onTitulosImagenesLoaded(new ArrayList<>());
+                            callback.onTitulosImagenesLoaded(new String[0]);
                         }
                     }
                 });
@@ -369,7 +378,7 @@ public class DatabaseHelper {
 
 
     public interface GetTitulosImagenesCallback {
-        void onTitulosImagenesLoaded(List<String> titulosImagenes);
+        void onTitulosImagenesLoaded(String[] titulosImagenes);
     }
 
 }
