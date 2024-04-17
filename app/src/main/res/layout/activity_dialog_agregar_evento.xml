@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/etTituloEvento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Título del Evento" />
+
+    <EditText
+        android:id="@+id/etDescripcionEvento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Descripción del Evento" />
+
+    <EditText
+        android:id="@+id/etFechaEvento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha del evento"
+        android:inputType="none"
+        android:clickable="true"
+        android:focusable="false" />
+
+
+</LinearLayout>
