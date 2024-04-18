@@ -381,4 +381,27 @@ public class DatabaseHelper {
         void onTitulosImagenesLoaded(String[] titulosImagenes);
     }
 
+
+    public static String guardarToken(Context context, String token) {
+        String tokenAlmacenado = obtenerTokenAlmacenado(context);
+        if (tokenAlmacenado != null && tokenAlmacenado.equals(token)) {
+            Log.d("DatabaseHelper", "El token ya está almacenado y coincide con el nuevo token.");
+            return tokenAlmacenado;
+        } else {
+            context.getSharedPreferences("TOKEN_PREFS", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("TOKEN", token)
+                    .apply();
+            Log.d("DatabaseHelper", "Se ha guardado el nuevo token en la base de datos.");
+            return context.getSharedPreferences("TOKEN_PREFS", Context.MODE_PRIVATE)
+                    .getString("TOKEN", null);
+        }
+    }
+
+    // Método para obtener el token almacenado en la base de datos
+    public static String obtenerTokenAlmacenado(Context context) {
+        return context.getSharedPreferences("TOKEN_PREFS", Context.MODE_PRIVATE)
+                .getString("TOKEN", null);
+    }
+
 }

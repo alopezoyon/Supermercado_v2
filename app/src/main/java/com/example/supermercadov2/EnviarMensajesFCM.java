@@ -38,18 +38,6 @@ public class EnviarMensajesFCM extends AppCompatActivity {
                 enviarMensaje();
             }
         });
-
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            return;
-                        }
-                        String token = task.getResult();
-                        Log.d("EnviarMensajesFCM","El token es :" + token);
-                    }
-                });
     }
 
     private void enviarMensaje() {
@@ -68,8 +56,9 @@ public class EnviarMensajesFCM extends AppCompatActivity {
                     urlConnection.setDoOutput(true);
 
                     // Cuerpo del mensaje
+                    String destino = DatabaseHelper.obtenerTokenAlmacenado(EnviarMensajesFCM.this);
                     JSONObject jsonMessage = new JSONObject();
-                    jsonMessage.put("to", "/topics/todos");
+                    jsonMessage.put("to", destino);
                     JSONObject data = new JSONObject();
                     data.put("mensaje", mensajeEditText.getText().toString());
                     jsonMessage.put("data", data);

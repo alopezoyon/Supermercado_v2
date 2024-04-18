@@ -19,7 +19,7 @@ public class obtenerTokenFirebase extends Application {
                 if (task.isSuccessful()){
                     String token = task.getResult();
                     Log.d("obtenerTokenFirebase", token);
-                    //Guardar el token en la bd
+                    DatabaseHelper.guardarToken(getApplicationContext(), token);
                 }
                 else {
                     return;

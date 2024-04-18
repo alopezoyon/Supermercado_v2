@@ -210,6 +210,7 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
         Intent intent = new Intent(MenuPrincipal.this, OpcionesEnSupermercado.class);
         intent.putExtra("NOMBRE_SUPERMERCADO", supermercado.getNombre());
         intent.putExtra("USERNAME_EXTRA", getIntent().getStringExtra("USERNAME_EXTRA"));
+        intent.putExtra("LOCALIZACION_SUPERMERCADO", supermercado.getLocalizacion());
         startActivity(intent);
     }
 }
