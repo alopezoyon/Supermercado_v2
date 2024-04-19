@@ -4,6 +4,9 @@ package com.example.supermercadov2;
 import static androidx.core.content.ContextCompat.startActivity;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -47,11 +50,15 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
     private int loginAttempts = 3;
     private boolean preferencesLoaded = false;
     private Timer loginTimer;
+    private static final int REQUEST_CODE = 123;
+    private static final long INTERVAL = 5 * 60 * 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        programarAlarma(this);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED) {
@@ -90,6 +97,15 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
         });
 
         setSupportActionBar(findViewById(R.id.toolbar));
+    }
+
+    // Método para programar la alarma
+    public static void programarAlarma(Context context) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL, pendingIntent);
+        Toast.makeText(context, "Alarma programada para enviar el mensaje cada 5 minutos", Toast.LENGTH_SHORT).show();
     }
 
     @Override

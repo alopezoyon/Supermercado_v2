@@ -21,26 +21,7 @@ import java.net.URL;
 
 public class EnviarMensajesFCM extends AppCompatActivity {
 
-    EditText mensajeEditText;
-    Button enviarButton;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_enviar_mensajes_fcm);
-
-        mensajeEditText = findViewById(R.id.mensaje_edit_text);
-        enviarButton = findViewById(R.id.enviar_button);
-
-        enviarButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                enviarMensaje();
-            }
-        });
-    }
-
-    private void enviarMensaje() {
+    public void enviarMensaje() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -60,7 +41,7 @@ public class EnviarMensajesFCM extends AppCompatActivity {
                     JSONObject jsonMessage = new JSONObject();
                     jsonMessage.put("to", destino);
                     JSONObject data = new JSONObject();
-                    data.put("mensaje", mensajeEditText.getText().toString());
+                    data.put("mensaje", "¿Has hecho ya la compra?");
                     jsonMessage.put("data", data);
 
                     // Escribir los datos del mensaje en el cuerpo de la solicitud
