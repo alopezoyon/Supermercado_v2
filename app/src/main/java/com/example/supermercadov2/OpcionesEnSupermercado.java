@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,6 +32,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -40,6 +46,8 @@ import java.util.Locale;
 public class OpcionesEnSupermercado extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CAMERA = 1;
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,16 +90,57 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
     //Método para abrir Google Maps con la localización guardada
     private void openGoogleMapsForSupermarket(String localizacionSupermercado) {
         try {
-            String supermercadoUri = Uri.encode(localizacionSupermercado);
-            Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + supermercadoUri);
-            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage("com.google.android.apps.maps");
-            startActivity(mapIntent);
+            // Obtener la ubicación actual del usuario
+            FusedLocationProviderClient proveedorDeUbicacion = LocationServices.getFusedLocationProviderClient(this);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                            != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        REQUEST_LOCATION_PERMISSION);
+                return;
+            }
+            proveedorDeUbicacion.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if (location != null) {
+                        // Ubicación actual obtenida con éxito
+                        double latitud = location.getLatitude();
+                        double longitud = location.getLongitude();
+                        // Crear la URI para la ubicación del supermercado
+                        String supermercadoUri = Uri.encode(localizacionSupermercado);
+                        // Crear la URI para la navegación desde la ubicación actual hasta el supermercado
+                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + supermercadoUri + "&mode=d");
+                        // Crear un Intent para abrir Google Maps con la ruta desde la ubicación actual hasta el supermercado
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        // Comprobar si hay una aplicación de mapas disponible para manejar el Intent
+                        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(mapIntent);
+                        } else {
+                            // Si no hay una aplicación de mapas disponible, mostrar un mensaje de error
+                            Toast.makeText(OpcionesEnSupermercado.this, "No hay aplicación de mapas disponible", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        // No se pudo obtener la ubicación actual, mostrar un mensaje de error
+                        Toast.makeText(OpcionesEnSupermercado.this, "No se puede obtener la ubicación actual", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }).addOnFailureListener(this, new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // Ocurrió un error al obtener la ubicación actual, mostrar un mensaje de error
+                    e.printStackTrace();
+                    Toast.makeText(OpcionesEnSupermercado.this, "Error", Toast.LENGTH_SHORT).show();
+                }
+            });
         } catch (Exception e) {
+            // Ocurrió un error, mostrar un mensaje de error
             e.printStackTrace();
-            Toast.makeText(OpcionesEnSupermercado.this, getString(R.string.error_maps), Toast.LENGTH_SHORT).show();
+            Toast.makeText(OpcionesEnSupermercado.this, "Error", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // Método para abrir la cámara y capturar una imagen
     private void abrirCamara() {
