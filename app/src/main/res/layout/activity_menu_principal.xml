@@ -17,48 +17,47 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"/>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
+    <!-- RecyclerView más pequeño -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSupermercados"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="400dp"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:layout_below="@id/txtWelcome"
-        android:layout_marginTop="16dp"
-        android:clipToPadding="false">
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewSupermercados"
-                android:layout_width="match_parent"
-                android:layout_height="600dp"
-                android:clipToPadding="false"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
+    <!-- Botón para agregar supermercado -->
     <Button
         android:id="@+id/btnAgregarSupermercado"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/recyclerViewSupermercados"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
         android:text="@string/btnAgregarSupermercado" />
 
-
+    <!-- Botón para enviar mensajes -->
     <Button
         android:id="@+id/btnEnviarMensajes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/btnAgregarSupermercado"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
         android:text="Enviar Mensajes" />
 
+    <!-- Botón para abrir el mapa -->
+    <Button
+        android:id="@+id/btnAbrirMapa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnEnviarMensajes"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Abrir mapa" />
+
 </RelativeLayout>
+
+

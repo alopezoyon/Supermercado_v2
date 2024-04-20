@@ -157,8 +157,33 @@ public class MenuPrincipal extends AppCompatActivity implements DialogAgregarSup
             }
         }
 
+        Button btnAbrirMapa = findViewById(R.id.btnAbrirMapa);
+        btnAbrirMapa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                abrirMapaConMarcadores();
+            }
+        });
+
 
     }
+
+    private void abrirMapaConMarcadores() {
+        ArrayList<String> localizaciones = obtenerLocalizaciones(listaSupermercados);
+        Intent intent = new Intent(MenuPrincipal.this, MapsActivity.class);
+        intent.putStringArrayListExtra("LOCALIZACIONES_EXTRA", localizaciones);
+        startActivity(intent);
+    }
+
+    // Método para obtener solo las localizaciones de los supermercados de la lista
+    private ArrayList<String> obtenerLocalizaciones(List<Supermercado> supermercados) {
+        ArrayList<String> localizaciones = new ArrayList<>();
+        for (Supermercado supermercado : supermercados) {
+            localizaciones.add(supermercado.getLocalizacion());
+        }
+        return localizaciones;
+    }
+
 
     // Método para cargar los supermercados guardados en la base de datos
     private void cargarSupermercadosDesdeDB(String username) {
