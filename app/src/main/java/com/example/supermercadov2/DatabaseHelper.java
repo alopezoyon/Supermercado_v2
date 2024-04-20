@@ -404,4 +404,39 @@ public class DatabaseHelper {
                 .getString("TOKEN", null);
     }
 
+    public void enviarMensaje() {
+        // Obtener el token almacenado en las preferencias compartidas
+        String destino = obtenerTokenAlmacenado(mContext);
+
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("to", destino);
+            postData.put("mensaje", "¿Has hecho ya la compra?");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String serverAddress = "http://34.170.99.24:81/enviarMensajes.php";
+
+        // Crear una solicitud de trabajo OneTimeWorkRequest
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                .setInputData(new Data.Builder()
+                        .putString("direccion", serverAddress)
+                        .putString("datos", postData.toString())
+                        .build())
+                .build();
+
+        // Observar el estado de la solicitud de trabajo
+        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
+                .observeForever(workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        String resultado = workInfo.getOutputData().getString("datos");
+                        Log.d("Resultado del servidor", resultado);
+                    }
+                });
+
+        // Encolar la solicitud de trabajo
+        WorkManager.getInstance(mContext).enqueue(otwr);
+    }
+
 }
