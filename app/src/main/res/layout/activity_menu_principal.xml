@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"/>
 
-    <!-- RecyclerView más pequeño -->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSupermercados"
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
         android:layout_below="@id/txtWelcome"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-    <!-- Botón para agregar supermercado -->
+
     <Button
         android:id="@+id/btnAgregarSupermercado"
         android:layout_width="wrap_content"
@@ -38,22 +38,12 @@
         android:layout_marginTop="16dp"
         android:text="@string/btnAgregarSupermercado" />
 
-    <!-- Botón para enviar mensajes -->
-    <Button
-        android:id="@+id/btnEnviarMensajes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btnAgregarSupermercado"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="Enviar Mensajes" />
 
-    <!-- Botón para abrir el mapa -->
     <Button
         android:id="@+id/btnAbrirMapa"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnEnviarMensajes"
+        android:layout_below="@id/btnAgregarSupermercado"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:text="Abrir mapa" />

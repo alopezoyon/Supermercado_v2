@@ -10,6 +10,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+//Esta clase obtiene el token del usuario de Firebase
 public class obtenerTokenFirebase extends Application {
     public void onCreate() {
         super.onCreate();

@@ -40,9 +40,9 @@ import androidx.work.Data;
 //Esta clase implementa la pantalla de logIn.
 //Se pide el usuario y contraseña.
 //También puedes registrar un usuario nuevo.
-//Hay un actionBar que posibilita ajustar las preferencias de color y de idioma.
 //Hay tres intentos de logIn, aparece un diálogo indicando si has fallado y el número de intentos restantes.
 //Si fallas 3 veces se bloquea los intentos durante 30 segundos.
+//Se inicializa una alarma que envía un mensaje FCM cada minuto.
 public class MainActivity extends AppCompatActivity implements DatabaseHelper.LoginCallback{
 
     private EditText edtUsername, edtPassword;
@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
     private boolean preferencesLoaded = false;
     private Timer loginTimer;
     private static final int REQUEST_CODE = 123;
-    //private static final long INTERVAL = 5 * 60 * 1000;
     private static final long INTERVAL = 1 * 1000;
 
     @Override
@@ -61,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
 
         programarAlarma(this);
 
+        //Se verifica si tenemos los permisos de POST_NOTIFICATIONS
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new
@@ -100,15 +100,16 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
         setSupportActionBar(findViewById(R.id.toolbar));
     }
 
-    // Método para programar la alarma
+    //Método para programar la alarma
     public static void programarAlarma(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL, pendingIntent);
-        Toast.makeText(context, "Alarma programada para enviar el mensaje cada 10 segundos", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Alarma programada para enviar el mensaje cada minuto", Toast.LENGTH_SHORT).show();
     }
 
+    //Método que maneja el resultado del login en la bd
     @Override
     public void onLoginResult(String result) {
         if (result.equals("exito")) {
@@ -126,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
         }
     }
 
+
     //Método para bloquear los intentos de logIn
     private void blockLoginAttemptsFor30Seconds() {
         if (loginTimer != null) {
@@ -140,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
             }
         }, 30000);
     }
+
 
     //Método para resetear el número de logIn a 3
     private void resetLoginAttempts() {

@@ -43,6 +43,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+//Esta clase muestra las opciones disponibles para cada supermercado
 public class OpcionesEnSupermercado extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CAMERA = 1;
@@ -54,7 +55,7 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_opciones_en_supermercado);
 
-        // Agregar el clic del botón "Sacar foto"
+        //Agregar el clic del botón "Sacar foto"
         Button btnSacarFoto = findViewById(R.id.btnSacarFoto);
         btnSacarFoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,7 +91,7 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
     //Método para abrir Google Maps con la localización guardada
     private void openGoogleMapsForSupermarket(String localizacionSupermercado) {
         try {
-            // Obtener la ubicación actual del usuario
+            //Obtener la ubicación actual del usuario
             FusedLocationProviderClient proveedorDeUbicacion = LocationServices.getFusedLocationProviderClient(this);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -104,50 +105,51 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
                 @Override
                 public void onSuccess(Location location) {
                     if (location != null) {
-                        // Ubicación actual obtenida con éxito
+                        //Ubicación actual obtenida con éxito
                         double latitud = location.getLatitude();
                         double longitud = location.getLongitude();
-                        // Crear la URI para la ubicación del supermercado
+                        //Crear la URI para la ubicación del supermercado
                         String supermercadoUri = Uri.encode(localizacionSupermercado);
-                        // Crear la URI para la navegación desde la ubicación actual hasta el supermercado
+                        //Crear la URI para la navegación desde la ubicación actual hasta el supermercado
                         Uri gmmIntentUri = Uri.parse("google.navigation:q=" + supermercadoUri + "&mode=d");
-                        // Crear un Intent para abrir Google Maps con la ruta desde la ubicación actual hasta el supermercado
+                        //Crear un Intent para abrir Google Maps con la ruta desde la ubicación actual hasta el supermercado
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");
-                        // Comprobar si hay una aplicación de mapas disponible para manejar el Intent
+                        //Comprobar si hay una aplicación de mapas disponible para manejar el Intent
                         if (mapIntent.resolveActivity(getPackageManager()) != null) {
                             startActivity(mapIntent);
                         } else {
-                            // Si no hay una aplicación de mapas disponible, mostrar un mensaje de error
+                            //Si no hay una aplicación de mapas disponible, mostrar un mensaje de error
                             Toast.makeText(OpcionesEnSupermercado.this, "No hay aplicación de mapas disponible", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        // No se pudo obtener la ubicación actual, mostrar un mensaje de error
+                        //No se pudo obtener la ubicación actual, mostrar un mensaje de error
                         Toast.makeText(OpcionesEnSupermercado.this, "No se puede obtener la ubicación actual", Toast.LENGTH_SHORT).show();
                     }
                 }
             }).addOnFailureListener(this, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    // Ocurrió un error al obtener la ubicación actual, mostrar un mensaje de error
+                    //Ocurrió un error al obtener la ubicación actual, mostrar un mensaje de error
                     e.printStackTrace();
                     Toast.makeText(OpcionesEnSupermercado.this, "Error", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (Exception e) {
-            // Ocurrió un error, mostrar un mensaje de error
+            //Ocurrió un error, mostrar un mensaje de error
             e.printStackTrace();
             Toast.makeText(OpcionesEnSupermercado.this, "Error", Toast.LENGTH_SHORT).show();
         }
     }
 
 
-    // Método para abrir la cámara y capturar una imagen
+    //Método para abrir la cámara y capturar una imagen
     private void abrirCamara() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePictureLauncher.launch(takePictureIntent);
     }
 
+    //Método que maneja la imagen que se ha sacado
     private ActivityResultLauncher<Intent> takePictureLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -161,7 +163,7 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
                     try {
                         fichImg = File.createTempFile(nombrefichero, ".jpg", eldirectorio);
                         uriimagen = FileProvider.getUriForFile(this, "com.example.supermercadov2.fileprovider", fichImg);
-                        // Enviar la imagen a la base de datos remota
+                        //Enviar la imagen a la base de datos remota
                         DatabaseHelper databaseHelper = new DatabaseHelper(OpcionesEnSupermercado.this);
                         Log.d("MenuPrincipal", "El título de la imagen es " + nombrefichero);
                         databaseHelper.sendImageDataToRemoteDatabase(laminiatura, nombrefichero, getIntent().getStringExtra("USERNAME_EXTRA"), getIntent().getStringExtra("NOMBRE_SUPERMERCADO"));
@@ -176,43 +178,45 @@ public class OpcionesEnSupermercado extends AppCompatActivity {
                 }
             });
 
+    //Método que llama a la bd para obtener las imágenes que se han guardado
     private void mostrarImagenesDesdeBDRemota(String titulo) {
         DatabaseHelper databaseHelper = new DatabaseHelper(OpcionesEnSupermercado.this);
         databaseHelper.getImagenes(titulo, getIntent().getStringExtra("USERNAME_EXTRA"),
                 getIntent().getStringExtra("NOMBRE_SUPERMERCADO"), new DatabaseHelper.GetImagenCallback() {
                     @Override
                     public void onImagenLoaded(Bitmap imagen) {
-                        // Verificar si se cargó la imagen
+                        //Verificar si se cargó la imagen
                         if (imagen != null) {
-                            // Iniciar la nueva actividad y pasar la imagen como un extra
+                            //Iniciar la nueva actividad y pasar la imagen como un extra
                             Intent intent = new Intent(OpcionesEnSupermercado.this, MostrarImagenes.class);
                             intent.putExtra("IMAGEN_EXTRA", imagen);
                             startActivity(intent);
                         } else {
-                            // Manejar el caso en el que no se cargó la imagen
+                            //Manejar el caso en el que no se cargó la imagen
                             Toast.makeText(OpcionesEnSupermercado.this, "No se encontró la imagen.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
 
+    //Método utilizado para llamar a la bd y obtener los títulos de las imágenes guardadas
     private void mostrarTitulosImagenesDesdeBDRemota() {
         DatabaseHelper databaseHelper = new DatabaseHelper(OpcionesEnSupermercado.this);
         databaseHelper.getTitulosImagenes(getIntent().getStringExtra("USERNAME_EXTRA"), getIntent().getStringExtra("NOMBRE_SUPERMERCADO"), new DatabaseHelper.GetTitulosImagenesCallback() {
             @Override
             public void onTitulosImagenesLoaded(String[] titulosImagenes) {
-                // Mostrar los títulos de imágenes en un diálogo y permitir al usuario elegir uno
+                //Mostrar los títulos de imágenes en un diálogo y permitir al usuario elegir uno
                 AlertDialog.Builder builder = new AlertDialog.Builder(OpcionesEnSupermercado.this);
                 builder.setTitle("Títulos de imágenes disponibles");
                 String[] titulosSeparados = new String[titulosImagenes.length];
                 for (int i = 0; i < titulosImagenes.length; i++) {
-                    titulosSeparados[i] = titulosImagenes[i] + "\n"; // Puedes añadir espacios u otros separadores si deseas
+                    titulosSeparados[i] = titulosImagenes[i] + "\n";
                     Log.d("Imágenes", titulosSeparados[i]);
                 }
                 builder.setItems(titulosSeparados, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        // El usuario ha seleccionado un título de imagen, ahora puedes mostrar la imagen asociada
+                        //El usuario ha seleccionado un título de imagen, ahora puedes mostrar la imagen asociada
                         mostrarImagenesDesdeBDRemota(titulosSeparados[i]);
                     }
                 });

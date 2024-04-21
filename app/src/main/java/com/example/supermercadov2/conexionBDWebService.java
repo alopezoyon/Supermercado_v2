@@ -18,6 +18,9 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
+//Esta clase es un intermerdiario entre las llamadas de la aplicación a la base de datos remota.
+//En este caso se encarga de enviar y recibir la petición para los procesos que no sean la gestión de imágenes
 public class conexionBDWebService extends Worker {
 
     public conexionBDWebService(@NonNull Context context, @NonNull WorkerParameters params) {
@@ -29,7 +32,7 @@ public class conexionBDWebService extends Worker {
     public Result doWork() {
         HttpURLConnection urlConnection = null;
         try {
-            // Obtener la dirección del servidor desde la entrada de datos
+            //Obtener la dirección del servidor desde la entrada de datos
             String direccion = getInputData().getString("direccion");
 
             URL destino = new URL(direccion);
@@ -37,19 +40,19 @@ public class conexionBDWebService extends Worker {
             urlConnection.setConnectTimeout(5000);
             urlConnection.setReadTimeout(5000);
 
-            // Configurar la solicitud HTTP POST
+            //Configurar la solicitud HTTP POST
             urlConnection.setRequestMethod("POST");
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("Content-Type", "application/json");
             Log.d("conexionBD","La url es: " + urlConnection);
 
-            // Escribir datos en la conexión
+            //Escribir datos en la conexión
             PrintWriter out = new PrintWriter(urlConnection.getOutputStream());
             out.print(getInputData().getString("datos"));
             out.close();
             Log.d("conexionBD", "Datos escritos en el flujo: " + getInputData().getString("datos"));
 
-            // Leer la respuesta del servidor
+            //Leer la respuesta del servidor
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             StringBuilder response = new StringBuilder();
             String line;
@@ -59,7 +62,7 @@ public class conexionBDWebService extends Worker {
             Log.d("conexionBD","Esta es la respuesta del server: " + response);
             bufferedReader.close();
 
-            // Devolver el resultado como datos de salida
+            //Devolver el resultado como datos de salida
             String resultado = response.toString();
             Data outputData = new Data.Builder().putString("datos", resultado).build();
             return Result.success(outputData);

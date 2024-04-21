@@ -41,7 +41,7 @@ public class DialogAgregarSupermercado extends Dialog {
                 String localizacion = edtLocalizacion.getText().toString().trim();
 
                 if (!nombre.isEmpty() && !localizacion.isEmpty()) {
-                    // Pasar el nombre de usuario al método onSupermercadoAdded
+                    //Pasar el nombre de usuario al método onSupermercadoAdded
                     listener.onSupermercadoAdded(nombre, localizacion, username);
                     dismiss();
                 } else {
@@ -53,6 +53,5 @@ public class DialogAgregarSupermercado extends Dialog {
 
     public interface OnSupermercadoAddedListener {
         void onSupermercadoAdded(String nombre, String localizacion, String username);
-        void onSupermercadoClick(int position);
     }
 }

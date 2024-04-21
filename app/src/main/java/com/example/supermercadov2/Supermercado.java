@@ -1,8 +1,8 @@
 package com.example.supermercadov2;
 
-import java.util.List;
 
-//Esta clase implementa los supermercados. Tenemos para cada uno su nombre, localización y la lista de productos que tiene.
+//Esta clase implementa los supermercados.
+//Tenemos para cada uno su nombre y localización
 public class Supermercado {
     private String nombre;
     private String localizacion;

@@ -35,7 +35,6 @@ public class MenuRegistro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_registro);
-        loadPreferences();
 
         edtName = findViewById(R.id.edtName);
         edtLastName = findViewById(R.id.edtLastName);
@@ -63,7 +62,7 @@ public class MenuRegistro extends AppCompatActivity {
 
                 if (!name.isEmpty() && !lastName.isEmpty() && !email.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
                     DatabaseHelper databaseHelper = new DatabaseHelper(MenuRegistro.this);
-                    // Llamada a registrar pasando un objeto RegistroCallback
+                    //Llamada a registrar pasando un objeto RegistroCallback
                     databaseHelper.registrar(name, lastName, email, username, password, new DatabaseHelper.RegistroCallback() {
                         @Override
                         public void onRegistroSuccess() {
@@ -85,50 +84,5 @@ public class MenuRegistro extends AppCompatActivity {
             }
         });
 
-    }
-
-    //Método para cargar las preferencias de idioma y color
-    private void loadPreferences() {
-        loadSavedLanguage();
-
-        loadSavedColor();
-    }
-
-    //Método para cargar las preferencias de idioma
-    private void loadSavedLanguage() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String savedLanguage = preferences.getString("language", "");
-
-        if (!savedLanguage.isEmpty()) {
-            setLocale(savedLanguage);
-        }
-    }
-
-    //Método para cargar las preferencias de color
-    private void loadSavedColor() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        int savedColor = preferences.getInt("color", 0);
-
-        if (savedColor != 0) {
-            changeBackgroundColor(savedColor);
-        }
-    }
-
-    //Método para establecer el idioma de preferencia
-    private void setLocale(String languageCode) {
-        Locale locale = new Locale(languageCode);
-        Locale.setDefault(locale);
-
-        Configuration configuration = getResources().getConfiguration();
-        configuration.setLocale(locale);
-
-        getResources().updateConfiguration(configuration, getResources().getDisplayMetrics());
-
-    }
-
-    //Método para cambiar el color del background establecido en preferencias
-    private void changeBackgroundColor(int color) {
-        View rootView = getWindow().getDecorView().getRootView();
-        rootView.setBackgroundColor(color);
     }
 }

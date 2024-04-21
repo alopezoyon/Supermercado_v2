@@ -22,8 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 //Esta clase implementa la base de datos.
 //Contiene los datos de registro (username, password, email, name y lastname) de los usuarios (se guardan en la tabla "users")
 //Contiene los datos del supermercado (nombre_super, localizacion) en la tabla "supermercados"
-//Contiene también los productos de cada supermercado en la tabla "productos_supermercado".
-//Cada producto tiene su nombre y precio.
 
 public class DatabaseHelper {
     private Context mContext;
@@ -32,14 +30,16 @@ public class DatabaseHelper {
         mContext = context;
     }
 
+    //Interfaz de login. Se usa cuando ha recibido una respuesta del servidor
     public interface LoginCallback {
         void onLoginResult(String result);
     }
 
+    //Método que usa para realizar el login en la bd
     public void login(String username, String password, LoginCallback callback){
 
         AtomicReference<String> respuesta = new AtomicReference<>("fallo");
-        // Crear un objeto JSONObject con los datos de inicio de sesión
+        //Crear un objeto JSONObject con los datos de inicio de sesión
         JSONObject postData = new JSONObject();
         try {
             postData.put("username", username);
@@ -49,7 +49,7 @@ public class DatabaseHelper {
         }
 
         String serverAddress = "http://34.170.99.24:81/login.php";
-        // Crear una solicitud de trabajo OneTimeWorkRequest
+        //Crear una solicitud de trabajo OneTimeWorkRequest
         OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -57,12 +57,12 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
+        //Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
-                        // Verificar si el login fue exitoso
+                        //Verificar si el login fue exitoso
                         if (resultado.equals("Inicio de sesión exitoso. Bienvenido, " + username + "!")) {
                             respuesta.set("exito");
                         }
@@ -70,13 +70,14 @@ public class DatabaseHelper {
                     }
                 });
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
+    //Método que sirve para registrar un usuario en la bd
     public void registrar(String name, String lastName, String email, String username, String password, RegistroCallback callback){
 
-        // Crear un objeto JSONObject con los datos de registro
+        //Crear un objeto JSONObject con los datos de registro
         JSONObject postData = new JSONObject();
         try {
             postData.put("name", name);
@@ -90,7 +91,7 @@ public class DatabaseHelper {
 
         String serverAddress = "http://34.170.99.24:81/registro.php";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest
+        //Crear una solicitud de trabajo OneTimeWorkRequest
         OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -98,23 +99,23 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
+        //Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
-                        // Verificar si el usuario se registró exitosamente
+                        //Verificar si el usuario se registró exitosamente
                         if (!resultado.equals("El nombre de usuario " + username + " ya está en uso.")) {
-                            // Llamar al método de callback con el resultado de éxito
+                            //Llamar al método de callback con el resultado de éxito
                             callback.onRegistroSuccess();
                         } else {
-                            // Llamar al método de callback con el resultado de fallo
+                            //Llamar al método de callback con el resultado de fallo
                             callback.onRegistroFailed();
                         }
                     }
                 });
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
@@ -126,9 +127,10 @@ public class DatabaseHelper {
 
 
 
+    //Método utilizado para obtener los supermercados de un usuario
     public void getSupermercados(String username, GetSupermercadosCallback callback){
 
-        // Crear un objeto JSONObject con los datos de inicio de sesión
+        //Crear un objeto JSONObject con los datos de inicio de sesión
         JSONObject postData = new JSONObject();
         try {
             postData.put("username", username);
@@ -137,7 +139,7 @@ public class DatabaseHelper {
         }
 
         String serverAddress = "http://34.170.99.24:81/mostrarSupermercados.php";
-        // Crear una solicitud de trabajo OneTimeWorkRequest
+        //Crear una solicitud de trabajo OneTimeWorkRequest
         OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -145,7 +147,7 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
+        //Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
@@ -156,27 +158,27 @@ public class DatabaseHelper {
                             if (!jsonArray.getJSONObject(0).has("message")) {
                                 List<Supermercado> supermercadoList = new ArrayList<>();
 
-                                // Iterar a través del JSONArray para obtener cada objeto JSON
+                                //Iterar a través del JSONArray para obtener cada objeto JSON
                                 for (int i = 0; i < jsonArray.length(); i++) {
-                                    // Obtener el objeto JSON actual
+                                    //Obtener el objeto JSON actual
                                     JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-                                    // Obtener los datos del supermercado del objeto JSON
+                                    //Obtener los datos del supermercado del objeto JSON
                                     String nombreSupermercado = jsonObject.getString("nombre_super");
                                     String localizacion = jsonObject.getString("localizacion");
 
-                                    // Crear un objeto de supermercado con los datos obtenidos
+                                    //Crear un objeto de supermercado con los datos obtenidos
                                     Supermercado supermercado = new Supermercado(nombreSupermercado, localizacion);
 
                                     Log.d("DatabaseHelper", "Datos super: " + nombreSupermercado + " " + localizacion);
-                                    // Agregar el supermercado al ArrayList
+                                    //Agregar el supermercado al ArrayList
                                     supermercadoList.add(supermercado);
                                 }
 
-                                // Llamar al método de callback cuando se haya terminado de agregar los supermercados
+                                //Llamar al método de callback cuando se haya terminado de agregar los supermercados
                                 callback.onSupermercadosLoaded(supermercadoList);
                             } else {
-                                // Si la respuesta indica que no hay supermercados, llamar al método de callback con una lista vacía
+                                //Si la respuesta indica que no hay supermercados, llamar al método de callback con una lista vacía
                                 callback.onSupermercadosLoaded(new ArrayList<>());
                             }
                         } catch (JSONException e) {
@@ -185,21 +187,22 @@ public class DatabaseHelper {
                     }
                 });
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
 
-    // Interfaz de callback para manejar la respuesta de obtener supermercados
+    //Interfaz de callback para manejar la respuesta de obtener supermercados
     public interface GetSupermercadosCallback {
         void onSupermercadosLoaded(List<Supermercado> supermercadoList);
     }
 
 
 
+    //Método que sirve para registrar un supermercado en la bd
     public void registrarSupermercado(String nombreSupermercado, String localizacion, String usernameRef, RegistroSupermercadoCallback callback){
 
-        // Crear un objeto JSONObject con los datos del supermercado
+        //Crear un objeto JSONObject con los datos del supermercado
         JSONObject postData = new JSONObject();
         try {
             postData.put("nombre_super", nombreSupermercado);
@@ -211,7 +214,7 @@ public class DatabaseHelper {
 
         String serverAddress = "http://34.170.99.24:81/registrarSupermercado.php";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest
+        //Crear una solicitud de trabajo OneTimeWorkRequest
         OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -219,32 +222,33 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
+        //Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
-                        // Verificar si el supermercado se registró exitosamente
+                        //Verificar si el supermercado se registró exitosamente
                         if (!resultado.equals("El supermercado '" + nombreSupermercado + "' ya está registrado.")) {
-                            // Llamar al método de callback con el resultado de éxito
+                            //Llamar al método de callback con el resultado de éxito
                             callback.onSupermercadoRegistrado();
                         } else {
-                            // Llamar al método de callback con el resultado de fallo
+                            //Llamar al método de callback con el resultado de fallo
                             callback.onRegistroSupermercadoFallido();
                         }
                     }
                 });
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
-    // Interfaz de callback para manejar el resultado del registro de supermercado
+    //Interfaz de callback para manejar el resultado del registro de supermercado
     public interface RegistroSupermercadoCallback {
         void onSupermercadoRegistrado();
         void onRegistroSupermercadoFallido();
     }
 
+    //Método qur sirve para enviar una imagen a la bd
     public void sendImageDataToRemoteDatabase(Bitmap imageData, String title, String user, String nombre_super) {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -252,7 +256,7 @@ public class DatabaseHelper {
         byte[] fototransformada = stream.toByteArray();
         String fotoen64 = Base64.encodeToString(fototransformada,Base64.DEFAULT);
 
-        // Crear un objeto JSONObject con los datos del supermercado
+        //Crear un objeto JSONObject con los datos del supermercado y la imagen codificada
         JSONObject postData = new JSONObject();
         try {
             postData.put("title", title);
@@ -264,7 +268,7 @@ public class DatabaseHelper {
         }
         String serverAddress = "http://34.170.99.24:81/guardarImagen.php";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest para enviar la imagen al servidor
+        //Crear una solicitud de trabajo OneTimeWorkRequest para enviar la imagen al servidor
         OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -272,65 +276,68 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(uploadWorkRequest);
     }
 
-        public void getImagenes(String titulo, String user, String supermercado, GetImagenCallback callback) {
+    //Método que sirve para obtener las imágenes de un usuario guardadas en la bd
+    public void getImagenes(String titulo, String user, String supermercado, GetImagenCallback callback) {
 
-            JSONObject postData = new JSONObject();
-            try {
-                postData.put("algo", "Enviando...");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            String serverAddress = "http://34.170.99.24:81/uploads/" + titulo + "_" + user + "_" + supermercado + ".jpg";
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("algo", "Enviando...");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String serverAddress = "http://34.170.99.24:81/uploads/" + titulo + "_" + user + "_" + supermercado + ".jpg";
 
-            // Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
-            OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
-                    .setInputData(new Data.Builder()
-                            .putString("direccion", serverAddress)
-                            .putString("datos", postData.toString())
-                            .build())
-                    .build();
+        //Crear una solicitud de trabajo OneTimeWorkRequest para obtener la imagen
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(conexionBDImagenes.class)
+                .setInputData(new Data.Builder()
+                        .putString("direccion", serverAddress)
+                        .putString("datos", postData.toString())
+                        .build())
+                .build();
 
-            // Observar el estado de la solicitud de trabajo
-            WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(request.getId())
-                    .observeForever(workInfo -> {
-                        if (workInfo != null && workInfo.getState().isFinished()) {
-                            // Obtener el resultado de la solicitud de trabajo
-                            Data outputData = workInfo.getOutputData();
+        //Observar el estado de la solicitud de trabajo
+        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(request.getId())
+                .observeForever(workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        //Obtener el resultado de la solicitud de trabajo
+                        Data outputData = workInfo.getOutputData();
 
-                            if (outputData != null) {
-                                // Verificar si el resultado es una imagen
-                                byte[] imagenBytes = outputData.getByteArray("imagen");
-                                if (imagenBytes != null && imagenBytes.length > 0) {
-                                    // La respuesta es una imagen
-                                    Bitmap imagenBitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-                                    // Llamar al método de callback con la imagen cargada
-                                    callback.onImagenLoaded(imagenBitmap);
-                                } else {
-                                    // Si no hay imagen, llamar al método de callback con null
-                                    callback.onImagenLoaded(null);
-                                }
+                        if (outputData != null) {
+                            //Verificar si el resultado es una imagen
+                            byte[] imagenBytes = outputData.getByteArray("imagen");
+                            if (imagenBytes != null && imagenBytes.length > 0) {
+                                //La respuesta es una imagen
+                                Bitmap imagenBitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                                //Llamar al método de callback con la imagen cargada
+                                callback.onImagenLoaded(imagenBitmap);
                             } else {
-                                // Si no hay datos de salida, llamar al método de callback con null
+                                //Si no hay imagen, llamar al método de callback con null
                                 callback.onImagenLoaded(null);
                             }
+                        } else {
+                            //Si no hay datos de salida, llamar al método de callback con null
+                            callback.onImagenLoaded(null);
                         }
-                    });
+                    }
+                });
 
-            // Encolar la solicitud de trabajo
-            WorkManager.getInstance(mContext).enqueue(request);
-        }
+        //Encolar la solicitud de trabajo
+        WorkManager.getInstance(mContext).enqueue(request);
+    }
 
-        // Interfaz de callback para manejar la carga de una imagen
-        public interface GetImagenCallback {
-            void onImagenLoaded(Bitmap imagen);
-        }
+    //Interfaz de callback para manejar la carga de una imagen
+    public interface GetImagenCallback {
+        void onImagenLoaded(Bitmap imagen);
+    }
 
+    //Método que sirve para obtener los títulos de las imágenes guardadas en un supermercado por un usuario
     public void getTitulosImagenes(String username, String nombreSupermercado, GetTitulosImagenesCallback callback) {
-        // Crear un objeto JSONObject con los datos del usuario y el supermercado
+
+        //Crear un objeto JSONObject con los datos del usuario y el supermercado
         JSONObject postData = new JSONObject();
         try {
             postData.put("username", username);
@@ -341,7 +348,7 @@ public class DatabaseHelper {
 
         String serverAddress = "http://34.170.99.24:81/obtenerImagenesUsuario.php";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest
+        //Crear una solicitud de trabajo OneTimeWorkRequest
         OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -349,7 +356,7 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
+        //Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
@@ -358,30 +365,32 @@ public class DatabaseHelper {
                         if (titulosImagenes != null) {
                             titulosImagenes = titulosImagenes.substring(1, titulosImagenes.length() - 1);
                             titulosImagenes = titulosImagenes.replaceAll("\"", "");
-                            // Dividir la cadena en un array de cadenas usando ","
+                            //Dividir la cadena en un array de cadenas usando ","
                             String[] titulosArray = titulosImagenes.split(",");
                             for (int i = 0; i < titulosArray.length; i++) {
                                 titulosArray[i] = titulosArray[i].trim();
                             }
-                            // Llamar al método de callback con los títulos de imágenes obtenidos
+                            //Llamar al método de callback con los títulos de imágenes obtenidos
                             callback.onTitulosImagenesLoaded(titulosArray);
                         } else {
-                            // Manejar el caso en el que no se obtuvieron los títulos de imágenes
+                            //Manejar el caso en el que no se obtuvieron los títulos de imágenes
                             callback.onTitulosImagenesLoaded(new String[0]);
                         }
                     }
                 });
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 
 
+    //Interfaz de callback para manejar los títulos de las imágenes obtenidos
     public interface GetTitulosImagenesCallback {
         void onTitulosImagenesLoaded(String[] titulosImagenes);
     }
 
 
+    //Método que sirve para guardar el token de Firebase en SharedPreferences
     public static String guardarToken(Context context, String token) {
         String tokenAlmacenado = obtenerTokenAlmacenado(context);
         if (tokenAlmacenado != null && tokenAlmacenado.equals(token)) {
@@ -398,14 +407,16 @@ public class DatabaseHelper {
         }
     }
 
-    // Método para obtener el token almacenado en la base de datos
+    // Método para obtener el token almacenado en SharedPreferences
     public static String obtenerTokenAlmacenado(Context context) {
         return context.getSharedPreferences("TOKEN_PREFS", Context.MODE_PRIVATE)
                 .getString("TOKEN", null);
     }
 
+
+    //Método que sirve para enviar un mensaje FCM
     public void enviarMensaje() {
-        // Obtener el token almacenado en las preferencias compartidas
+        //Obtener el token almacenado en las preferencias compartidas
         String destino = obtenerTokenAlmacenado(mContext);
 
         JSONObject postData = new JSONObject();
@@ -418,7 +429,7 @@ public class DatabaseHelper {
 
         String serverAddress = "http://34.170.99.24:81/enviarMensajes.php";
 
-        // Crear una solicitud de trabajo OneTimeWorkRequest
+        //Crear una solicitud de trabajo OneTimeWorkRequest
         OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
                 .setInputData(new Data.Builder()
                         .putString("direccion", serverAddress)
@@ -426,7 +437,7 @@ public class DatabaseHelper {
                         .build())
                 .build();
 
-        // Observar el estado de la solicitud de trabajo
+        //Observar el estado de la solicitud de trabajo
         WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
                 .observeForever(workInfo -> {
                     if (workInfo != null && workInfo.getState().isFinished()) {
@@ -435,7 +446,7 @@ public class DatabaseHelper {
                     }
                 });
 
-        // Encolar la solicitud de trabajo
+        //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
 

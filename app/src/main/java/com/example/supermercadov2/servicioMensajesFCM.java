@@ -13,42 +13,44 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+//Esta clase recibe la notificación de Firebase
 public class servicioMensajesFCM extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        // Log para verificar la recepción del mensaje
+        //Log para verificar la recepción del mensaje
         Log.d("servicioMensajesFCM", "From: " + remoteMessage.getFrom());
 
-        // Verificar si el mensaje contiene una carga útil de datos
+        //Verificar si el mensaje contiene datos
         if (remoteMessage.getData().size() > 0) {
             Log.d("servicioMensajesFCM", "Message data payload: " + remoteMessage.getData());
 
-            // Mostrar la notificación
+            //Mostrar la notificación
             mostrarNotificacion(remoteMessage.getData().get("title"), remoteMessage.getData().get("body"));
         }
 
-        // Verificar si el mensaje contiene una carga útil de notificación
+        //Verificar si el mensaje contiene una notificación
         if (remoteMessage.getNotification() != null) {
             Log.d("servicioMensajesFCM", "Message Notification Body: " + remoteMessage.getNotification().getBody());
 
-            // Mostrar la notificación
+            //Mostrar la notificación
             mostrarNotificacion(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
         }
     }
 
+    //Método creado para mostrar la notificación de Firebase creando para ello un canal de notificaciones
     private void mostrarNotificacion(String title, String body) {
-        // Crear un ID de canal único
+        //Crear un ID de canal
         String channelId = "default_channel";
 
-        // Crear un NotificationManager
+        //Crear un NotificationManager
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Verificar si el dispositivo tiene una versión de Android Oreo (API nivel 26) o superior
+        //Verificar si el dispositivo tiene una versión de Android Oreo (API nivel 26) o superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Crear un canal de notificación
+            //Crear un canal de notificación
             NotificationChannel channel = new NotificationChannel(channelId, "Default Channel", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("Default Notification Channel");
             channel.enableLights(true);
@@ -56,14 +58,14 @@ public class servicioMensajesFCM extends FirebaseMessagingService {
             notificationManager.createNotificationChannel(channel);
         }
 
-        // Construir la notificación
+        //Construir la notificación
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setAutoCancel(true);
 
-        // Mostrar la notificación
+        //Mostrar la notificación
         notificationManager.notify(0, notificationBuilder.build());
     }
 }

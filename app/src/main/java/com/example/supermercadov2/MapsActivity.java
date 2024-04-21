@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+//Esta clase implementa una actividad con marcadores en Google Maps
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -29,10 +30,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        // Inicializar el Geocoder
+        //Inicializar el Geocoder
         geocoder = new Geocoder(this, Locale.getDefault());
 
-        // Obtener el SupportMapFragment y notificar cuando el mapa esté listo para ser usado.
+        //Obtener el SupportMapFragment y notificar cuando el mapa está listo
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -42,12 +43,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Aquí puedes añadir marcadores o realizar cualquier otra operación después de que el mapa esté listo.
-
-        // Obtener la lista de localizaciones extraída del intent
+        //Obtener la lista de localizaciones extraída del intent
         List<String> listaLocalizaciones = getIntent().getStringArrayListExtra("LOCALIZACIONES_EXTRA");
 
-        // Agregar marcadores para cada localización
+        //Agregar marcadores para cada localización
         if (listaLocalizaciones != null && !listaLocalizaciones.isEmpty()) {
             for (String localizacion : listaLocalizaciones) {
                 LatLng location = getLocationFromAddress(getApplicationContext(), localizacion);
@@ -59,19 +58,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    // Método para obtener las coordenadas de latitud y longitud a partir de una dirección
+    //Método para obtener las coordenadas de latitud y longitud a partir de una dirección
     public LatLng getLocationFromAddress(Context context, String strAddress) {
         List<Address> addressList = null;
         LatLng latLng = null;
         try {
-            // Usar Geocoder para obtener la lista de direcciones a partir de la dirección proporcionada
+            //Usar Geocoder para obtener la lista de direcciones a partir de la dirección
             addressList = geocoder.getFromLocationName(strAddress, 1);
             if (addressList != null && !addressList.isEmpty()) {
                 Address address = addressList.get(0);
-                // Obtener las coordenadas de latitud y longitud de la dirección
+                //Obtener las coordenadas de latitud y longitud de la dirección
                 double latitude = address.getLatitude();
                 double longitude = address.getLongitude();
-                // Crear un objeto LatLng con las coordenadas obtenidas
+                //Crear un objeto LatLng con las coordenadas obtenidas
                 latLng = new LatLng(latitude, longitude);
             }
         } catch (IOException e) {
