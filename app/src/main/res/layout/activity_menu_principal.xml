@@ -46,7 +46,7 @@
         android:layout_below="@id/btnAgregarSupermercado"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="Abrir mapa" />
+        android:text="@string/open_maps" />
 
 </RelativeLayout>
 

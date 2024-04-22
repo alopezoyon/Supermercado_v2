@@ -43,4 +43,8 @@
     <string name="product_exists">Produit existe déjà</string>
     <string name="no_notes">Il n\'y a pas de notes dans ce supermarché</string>
     <string name="see_notes">Voir les notes</string>
+    <string name="open_maps">Ouvrir Maps</string>
+    <string name="sacar_foto">Prendre une photo</string>
+    <string name="mostrar_fotos">Afficher les images</string>
+    <string name="eliminar_imagen">Éliminer une image</string>
 </resources>

@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
+
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -105,7 +107,7 @@ public class DatabaseHelper {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
                         //Verificar si el usuario se registró exitosamente
-                        if (!resultado.equals("El nombre de usuario " + username + " ya está en uso.")) {
+                        if (!resultado.equals("El nombre de usuario '" + username + "' ya está en uso.")) {
                             //Llamar al método de callback con el resultado de éxito
                             callback.onRegistroSuccess();
                         } else {
@@ -449,5 +451,49 @@ public class DatabaseHelper {
         //Encolar la solicitud de trabajo
         WorkManager.getInstance(mContext).enqueue(otwr);
     }
+
+    //Método para eliminar una imagen
+    public void eliminarImagen(String tituloImagen, EliminarImagenesCallback callback) {
+
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("tituloImagen", tituloImagen);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String serverAddress = "http://34.170.99.24:81/eliminarImagen.php";
+
+        //Crear una solicitud de trabajo OneTimeWorkRequest
+        OneTimeWorkRequest otwr = new OneTimeWorkRequest.Builder(conexionBDWebService.class)
+                .setInputData(new Data.Builder()
+                        .putString("direccion", serverAddress)
+                        .putString("datos", postData.toString())
+                        .build())
+                .build();
+
+        //Observar el estado de la solicitud de trabajo
+        WorkManager.getInstance(mContext).getWorkInfoByIdLiveData(otwr.getId())
+                .observeForever(workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        String resultado = workInfo.getOutputData().getString("datos");
+                        Log.d("Resultado del servidor", resultado);
+                        if (resultado.equals("Imagen '"+ tituloImagen +"'"+ "eliminada correctamente")){
+                            callback.onImagenDeleted("Imagen '"+ tituloImagen +"'"+ " eliminada correctamente");
+                        }
+                        else {
+                            callback.onImagenDeleted("Error al eliminar la imagen");
+                        }
+                    }
+                });
+
+        //Encolar la solicitud de trabajo
+        WorkManager.getInstance(mContext).enqueue(otwr);
+    }
+
+    public interface EliminarImagenesCallback {
+        void onImagenDeleted(String mensaje);
+    }
+
 
 }

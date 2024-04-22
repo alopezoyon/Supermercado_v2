@@ -11,28 +11,46 @@
         android:id="@+id/btnSacarFoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sacar foto"
+        android:text="@string/sacar_foto"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="80dp"/>
 
     <Button
         android:id="@+id/btnMostrarFotos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Mostrar fotos"
+        android:text="@string/mostrar_fotos"
         app:layout_constraintTop_toBottomOf="@+id/btnSacarFoto"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp" />
 
     <Button
         android:id="@+id/btnCalculateDistance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
-        android:text="@string/go" />
+        android:text="@string/go"
+        app:layout_constraintTop_toBottomOf="@+id/btnMostrarFotos"
+        app:layout_constraintStart_toStartOf="@+id/btnMostrarFotos"
+        app:layout_constraintEnd_toEndOf="@+id/btnMostrarFotos"
+        android:layout_marginTop="30dp"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <Button
+        android:id="@+id/btnEliminarImagen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eliminar_imagen"
+        app:layout_constraintTop_toBottomOf="@+id/btnCalculateDistance"
+        app:layout_constraintStart_toStartOf="@+id/btnCalculateDistance"
+        app:layout_constraintEnd_toEndOf="@+id/btnCalculateDistance"
+        android:layout_marginTop="30dp"
+        app:layout_constraintVertical_chainStyle="packed"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
