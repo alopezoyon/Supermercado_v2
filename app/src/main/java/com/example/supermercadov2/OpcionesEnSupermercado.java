@@ -47,6 +47,8 @@
     public class OpcionesEnSupermercado extends AppCompatActivity {
 
         private static final int PERMISSION_REQUEST_CAMERA = 1;
+        private static final int PERMISSION_REQUEST_STORAGE = 2;
+
         private static final int REQUEST_LOCATION_PERMISSION = 1;
 
 
@@ -94,6 +96,14 @@
                     eliminarImagen();
                 }
             });
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // Si no se tiene permiso, solicitarlo al usuario
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_STORAGE);
+            }
 
         }
 
