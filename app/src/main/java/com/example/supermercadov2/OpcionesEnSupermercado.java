@@ -97,14 +97,6 @@
                 }
             });
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                // Si no se tiene permiso, solicitarlo al usuario
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        PERMISSION_REQUEST_STORAGE);
-            }
-
         }
 
         private void eliminarImagen() {
@@ -216,6 +208,12 @@
         //Método para abrir la cámara y capturar una imagen
         private void abrirCamara() {
             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_STORAGE);
+            }
             takePictureLauncher.launch(takePictureIntent);
         }
 
