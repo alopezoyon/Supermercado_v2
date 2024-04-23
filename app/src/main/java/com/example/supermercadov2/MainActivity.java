@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
     private boolean preferencesLoaded = false;
     private Timer loginTimer;
     private static final int REQUEST_CODE = 123;
-    private static final long INTERVAL = 1 * 1000;
+    private static final long INTERVAL = 5 * 60 * 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements DatabaseHelper.Lo
         Intent intent = new Intent(context, AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL, pendingIntent);
-        Toast.makeText(context, "Alarma programada para enviar el mensaje cada minuto", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Alarma programada para enviar el mensaje cada 5 minutos", Toast.LENGTH_SHORT).show();
     }
 
     //Método que maneja el resultado del login en la bd
