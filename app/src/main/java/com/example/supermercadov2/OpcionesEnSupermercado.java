@@ -46,8 +46,8 @@
     //Esta clase muestra las opciones disponibles para cada supermercado
     public class OpcionesEnSupermercado extends AppCompatActivity {
 
-        private static final int PERMISSION_REQUEST_CAMERA = 1;
-        private static final int PERMISSION_REQUEST_STORAGE = 2;
+        private static final int PERMISSION_REQUEST_CAMERA = 123;
+        private static final int PERMISSION_REQUEST_STORAGE = 456;
 
         private static final int REQUEST_LOCATION_PERMISSION = 1;
 
@@ -223,20 +223,24 @@
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Bundle bundle = result.getData().getExtras();
                         Bitmap laminiatura = (Bitmap) bundle.get("data");
-                        // Obtener el directorio de archivos de la aplicación
-                        File eldirectorio = getFilesDir();
+                        //Obtener el directorio de archivos de la aplicación
+                        File eldirectorio = this.getFilesDir();
                         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-                        String nombrefichero = "IMG_" + timeStamp + ".jpg"; // Elimina el guión bajo adicional
+                        String nombrefichero = "IMG_" + timeStamp + ".jpg";
                         File fichImg = null;
                         Uri uriimagen = null;
                         try {
-                            // Crear el archivo en el almacenamiento interno de la aplicación
+                            //Crear el archivo en el almacenamiento interno de la aplicación
                             fichImg = new File(eldirectorio, nombrefichero);
                             uriimagen = FileProvider.getUriForFile(this, "com.example.supermercadov2.fileprovider", fichImg);
+                            //Redimensionar imagen
+                            Bitmap resizedBitmap = resizeBitmap(laminiatura, 32, 32);
                             //Enviar la imagen a la base de datos remota
                             DatabaseHelper databaseHelper = new DatabaseHelper(OpcionesEnSupermercado.this);
+                            int imageSizeBefore = resizedBitmap.getByteCount();
+                            Log.d("MenuPrincipal", "Tamaño de la imagen antes de enviar (bytes): " + imageSizeBefore);
                             Log.d("MenuPrincipal", "El título de la imagen es " + nombrefichero);
-                            databaseHelper.sendImageDataToRemoteDatabase(laminiatura, nombrefichero, getIntent().getStringExtra("USERNAME_EXTRA"), getIntent().getStringExtra("NOMBRE_SUPERMERCADO"));
+                            databaseHelper.sendImageDataToRemoteDatabase(resizedBitmap, nombrefichero, getIntent().getStringExtra("USERNAME_EXTRA"), getIntent().getStringExtra("NOMBRE_SUPERMERCADO"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -247,6 +251,28 @@
                         Log.d("TakenPicture", "No photo taken");
                     }
                 });
+
+        //Método que redimensiona la imagen
+        private Bitmap resizeBitmap(Bitmap originalBitmap, int maxWidth, int maxHeight) {
+            int width = originalBitmap.getWidth();
+            int height = originalBitmap.getHeight();
+
+            //Calcular la relación de aspecto
+            float aspectRatio = (float) width / (float) height;
+
+            //Calcular las nuevas dimensiones de acuerdo al ancho máximo y alto máximo permitidos
+            int newWidth = Math.min(width, maxWidth);
+            int newHeight = (int) (newWidth / aspectRatio);
+
+            if (newHeight > maxHeight) {
+                newHeight = maxHeight;
+                newWidth = (int) (newHeight * aspectRatio);
+            }
+
+            //Redimensionar la imagen
+            return Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+        }
+
 
 
         //Método que llama a la bd para obtener las imágenes que se han guardado

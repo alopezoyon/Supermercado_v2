@@ -478,8 +478,8 @@ public class DatabaseHelper {
                     if (workInfo != null && workInfo.getState().isFinished()) {
                         String resultado = workInfo.getOutputData().getString("datos");
                         Log.d("Resultado del servidor", resultado);
-                        if (resultado.equals("Imagen '"+ tituloImagen +"'"+ "eliminada correctamente")){
-                            callback.onImagenDeleted("Imagen '"+ tituloImagen +"'"+ " eliminada correctamente");
+                        if (resultado.equals("Imagen '"+ tituloImagen +"'"+ " eliminada correctamente.")){
+                            callback.onImagenDeleted("Imagen eliminada correctamente.");
                         }
                         else {
                             callback.onImagenDeleted("Error al eliminar la imagen");
