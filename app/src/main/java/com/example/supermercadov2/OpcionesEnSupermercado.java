@@ -223,13 +223,15 @@
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Bundle bundle = result.getData().getExtras();
                         Bitmap laminiatura = (Bitmap) bundle.get("data");
-                        File eldirectorio = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                        // Obtener el directorio de archivos de la aplicación
+                        File eldirectorio = getFilesDir();
                         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-                        String nombrefichero = "IMG_" + timeStamp + "_";
+                        String nombrefichero = "IMG_" + timeStamp + ".jpg"; // Elimina el guión bajo adicional
                         File fichImg = null;
                         Uri uriimagen = null;
                         try {
-                            fichImg = File.createTempFile(nombrefichero, ".jpg", eldirectorio);
+                            // Crear el archivo en el almacenamiento interno de la aplicación
+                            fichImg = new File(eldirectorio, nombrefichero);
                             uriimagen = FileProvider.getUriForFile(this, "com.example.supermercadov2.fileprovider", fichImg);
                             //Enviar la imagen a la base de datos remota
                             DatabaseHelper databaseHelper = new DatabaseHelper(OpcionesEnSupermercado.this);
@@ -245,6 +247,7 @@
                         Log.d("TakenPicture", "No photo taken");
                     }
                 });
+
 
         //Método que llama a la bd para obtener las imágenes que se han guardado
         private void mostrarImagenesDesdeBDRemota(String titulo) {
