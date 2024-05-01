@@ -1,45 +1,46 @@
 <?php
-$DB_SERVER = "db"; 
-$DB_USER = "admin"; 
-$DB_PASS = "test"; 
-$DB_DATABASE = "database";
+// Incluir la conexión a la base de datos
+include('conexion.php');
 
-$con = mysqli_connect($DB_SERVER, $DB_USER, $DB_PASS, $DB_DATABASE);
-
-//Comprobamos conexión
-if (mysqli_connect_errno()) {
-    echo 'Error de conexion: ' . mysqli_connect_error();
-    exit();
-}
 
 //Verificar registro de usuario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     //Recibir datos del formulario de registro
     $parametros = json_decode(file_get_contents('php://input'), true);
-    $name = $parametros['name'];
-    $lastName = $parametros['lastName'];
+    $nombre = $parametros['nombre'];
+    $apellidos = $parametros['apellidos'];
     $email = $parametros['email'];
-    $username = $parametros['username'];
-    $password = $parametros['password'];
+    $usuario = $parametros['usuario'];
+    $contrasena = $parametros['contrasena'];
+    $fechaNacimiento = $parametros['fecha_nacimiento'];
+    $telefono = $parametros['telefono'];
 
     //Comprobamos si el usuario ya existe
-    $check_query = "SELECT * FROM users WHERE username='$username'";
+    $check_query = "SELECT * FROM usuarios WHERE usuario='$usuario'";
     $check_result = mysqli_query($con, $check_query);
 
     if (mysqli_num_rows($check_result) > 0) {
-        //El usuario ya existe, devuelve un mensaje de error
-        echo "El nombre de usuario '$username' ya está en uso.";
+        $response['usuarioExiste'] = true;
+        $response['exito'] = false;
     } else {
+        $response['usuarioExiste'] = false;
+        $hashed_password = hash('sha256', $contrasena);
         //Insertar nuevo usuario en la base de datos
-        $insert_query = "INSERT INTO users (name, lastName, email, username, password) VALUES ('$name', '$lastName', '$email', '$username', '$password')";
+        $insert_query = "INSERT INTO usuarios (USUARIO, PASSWORD, NOMBRE, APELLIDOS, FECHA_NACIMIENTO, NUMERO_TELEFONO, EMAIL)
+                          VALUES ('$usuario', '$hashed_password', '$nombre', '$apellidos', '$fechaNacimiento', '$telefono', '$email')";
         if (mysqli_query($con, $insert_query)) {
             //Registro exitoso
-            echo "Registro exitoso para el usuario '$username'.";
+            $response['exito'] = true;
         } else {
             //Error al registrar
-            echo "Error al registrar el usuario.";
+            $response['exito'] = false;
         }
     }
 }
 
+// Devolver la respuesta en formato JSON
+echo json_encode($response);
+
+// Cerrar la conexión
+mysqli_close($con);
 ?>
